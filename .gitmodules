@@ -1,0 +1,3 @@
+[submodule "corrade"]
+	path = corrade
+	url = https://github.com/mosra/corrade
