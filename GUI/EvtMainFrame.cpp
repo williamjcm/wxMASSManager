@@ -218,8 +218,6 @@ void EvtMainFrame::initialiseListView() {
 
     refreshListView();
 
-    updateCommandsState();
-
     _refreshTimer.Start(1000);
 }
 
