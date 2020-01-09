@@ -79,7 +79,6 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	this->SetSizer( bSizerMain );
 	this->Layout();
 	bSizerMain->Fit( this );
-	_refreshTimer.SetOwner( this, wxID_ANY );
 
 	this->Centre( wxBOTH );
 
@@ -88,7 +87,6 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveEvent ), NULL, this );
 	_deleteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteEvent ), NULL, this );
 	_openSaveDirButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
-	this->Connect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( MainFrame::timerEvent ) );
 }
 
 MainFrame::~MainFrame()
@@ -98,6 +96,5 @@ MainFrame::~MainFrame()
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveEvent ), NULL, this );
 	_deleteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteEvent ), NULL, this );
 	_openSaveDirButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
-	this->Disconnect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( MainFrame::timerEvent ) );
 
 }

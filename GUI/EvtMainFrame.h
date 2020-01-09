@@ -19,6 +19,8 @@
 
 #include <string>
 
+#include <wx/fswatcher.h>
+
 #include "MainFrame.h"
 
 class EvtMainFrame: public MainFrame {
@@ -33,7 +35,7 @@ class EvtMainFrame: public MainFrame {
         void openSaveDirEvent(wxCommandEvent&);
         void installedSelectionEvent(wxListEvent&);
         void listColumnDragEvent(wxListEvent&);
-        void timerEvent(wxTimerEvent&);
+        void fileUpdateEvent(wxFileSystemWatcherEvent& event);
 
     private:
         void getSaveDirectory();
@@ -50,6 +52,9 @@ class EvtMainFrame: public MainFrame {
 
         std::string _saveDirectory;
         std::string _localSteamId;
+
+        wxFileSystemWatcher _watcher;
+        int _lastWatcherEventType = 0;
 };
 
 #endif // __EvtMainFrame__

@@ -28,6 +28,7 @@
 #include <Corrade/Containers/Array.h>
 #include <Corrade/Utility/Directory.h>
 #include <Corrade/Utility/FormatStl.h>
+#include <Corrade/Utility/String.h>
 #include <Corrade/Utility/Unicode.h>
 
 #include "EvtMainFrame.h"
@@ -55,6 +56,10 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
                                       "Please avoid using this application while the game is running. Bad Things™ could happen to your data.\n\n"
                                       "DISCLAIMER: The developer of this application cannot be held responsible for data loss or corruption. PLEASE USE AT YOUR OWN RISK!\n\n"
                                       "Last but not least, this application is released under the terms of the GNU General Public Licence version 3. Please see the COPYING file for more details."));
+
+    _watcher.Connect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
+    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_saveDirectory), wxPATH_WIN),
+                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, wxString::Format("Unit??%s.sav", _localSteamId));
 }
 
 EvtMainFrame::~EvtMainFrame() {
@@ -62,6 +67,7 @@ EvtMainFrame::~EvtMainFrame() {
     _installedListView->Disconnect(wxEVT_LIST_ITEM_DESELECTED, wxListEventHandler(EvtMainFrame::installedSelectionEvent), nullptr, this);
     _installedListView->Disconnect(wxEVT_LIST_BEGIN_DRAG, wxListEventHandler(EvtMainFrame::listColumnDragEvent), nullptr, this);
     _installedListView->Disconnect(wxEVT_LIST_COL_BEGIN_DRAG, wxListEventHandler(EvtMainFrame::listColumnDragEvent), nullptr, this);
+    _watcher.Disconnect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
 }
 
 void EvtMainFrame::importEvent(wxCommandEvent&) {
@@ -117,8 +123,6 @@ void EvtMainFrame::importEvent(wxCommandEvent&) {
             *(iter + i) = _localSteamId[i];
         }
     }
-
-    refreshListView();
 }
 
 void EvtMainFrame::moveEvent(wxCommandEvent&) {
@@ -147,8 +151,6 @@ void EvtMainFrame::moveEvent(wxCommandEvent&) {
     if(dest_status != "<Empty>") {
         Utility::Directory::move(dest_file + ".tmp", orig_file);
     }
-
-    refreshListView();
 }
 
 void EvtMainFrame::deleteEvent(wxCommandEvent&) {
@@ -162,8 +164,6 @@ void EvtMainFrame::deleteEvent(wxCommandEvent&) {
     if(Utility::Directory::exists(file)) {
         Utility::Directory::rm(file);
     }
-
-    refreshListView();
 }
 
 void EvtMainFrame::openSaveDirEvent(wxCommandEvent&) {
@@ -178,8 +178,34 @@ void EvtMainFrame::listColumnDragEvent(wxListEvent& event) {
     event.Veto();
 }
 
-void EvtMainFrame::timerEvent(wxTimerEvent&) {
-    refreshListView();
+void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
+    int event_type = event.GetChangeType();
+
+    if(event_type == wxFSW_EVENT_MODIFY && _lastWatcherEventType == wxFSW_EVENT_RENAME) {
+        _lastWatcherEventType = event_type;
+        return;
+    }
+
+    _lastWatcherEventType = event_type;
+
+    std::string event_file =(Utility::Directory::fromNativeSeparators(event.GetNewPath().GetFullName().ToStdString()));
+
+    if(!Utility::String::endsWith(event_file, ".sav")) {
+        return;
+    }
+
+    long slot;
+
+    try {
+        slot = std::stol(std::string(event_file.data() + 4, 2));
+    }
+    catch(const std::invalid_argument&) {
+        return;
+    }
+
+    _installedListView->SetItem(slot, 1, getSlotMassName(slot));
+
+    updateCommandsState();
 }
 
 void EvtMainFrame::getSaveDirectory() {
@@ -228,8 +254,6 @@ void EvtMainFrame::initialiseListView() {
     _installedListView->SetColumnWidth(1, wxLIST_AUTOSIZE_USEHEADER);
 
     refreshListView();
-
-    _refreshTimer.Start(1000);
 }
 
 void EvtMainFrame::refreshListView() {
