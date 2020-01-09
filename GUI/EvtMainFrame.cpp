@@ -22,9 +22,13 @@
 #include <wx/numdlg.h>
 #include <wx/regex.h>
 
+#define WIN32_LEAN_AND_MEAN
+#include <shlobj.h>
+
 #include <Corrade/Containers/Array.h>
 #include <Corrade/Utility/Directory.h>
 #include <Corrade/Utility/FormatStl.h>
+#include <Corrade/Utility/Unicode.h>
 
 #include "EvtMainFrame.h"
 
@@ -179,7 +183,14 @@ void EvtMainFrame::timerEvent(wxTimerEvent&) {
 }
 
 void EvtMainFrame::getSaveDirectory() {
-    _saveDirectory = Utility::Directory::join(Utility::Directory::fromNativeSeparators(getenv("localappdata")), "MASS_Builder/Saved/SaveGames");
+    wchar_t h[MAX_PATH];
+    if(!SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, h))) {
+        errorMessage("Couldn't get the path for %LOCALAPPDATA%. :/");
+        Close();
+        return;
+    }
+
+    _saveDirectory = Utility::Directory::join(Utility::Directory::fromNativeSeparators(Utility::Unicode::narrow(h)), "MASS_Builder/Saved/SaveGames");
 
     if(!Utility::Directory::exists(_saveDirectory)) {
         errorMessage("Couldn't find the M.A.S.S. Builder save directory at " + _saveDirectory + ". Please run the game at least once to create it.");
