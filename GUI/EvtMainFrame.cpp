@@ -179,7 +179,7 @@ void EvtMainFrame::timerEvent(wxTimerEvent&) {
 }
 
 void EvtMainFrame::getSaveDirectory() {
-    _saveDirectory = Utility::Directory::path(Utility::Directory::home()) + "/AppData/Local/MASS_Builder/Saved/SaveGames";
+    _saveDirectory = Utility::Directory::join(Utility::Directory::fromNativeSeparators(getenv("localappdata")), "MASS_Builder/Saved/SaveGames");
 
     if(!Utility::Directory::exists(_saveDirectory)) {
         errorMessage("Couldn't find the M.A.S.S. Builder save directory at " + _saveDirectory + ". Please run the game at least once to create it.");
