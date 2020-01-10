@@ -42,6 +42,8 @@ constexpr unsigned char mass_name_locator[] = { 'N', 'a', 'm', 'e', '_', '4', '5
 
 constexpr unsigned char steamid_locator[] = { 'A', 'c', 'c', 'o', 'u', 'n', 't', '\0', 0x0C, '\0', '\0', '\0', 'S', 't', 'r', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
 
+constexpr unsigned char active_slot_locator[] = { 'A', 'c', 't', 'i', 'v', 'e', 'F', 'r', 'a', 'm', 'e', 'S', 'l', 'o', 't', '\0', 0x0C, '\0', '\0', '\0', 'I', 'n', 't', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
+
 EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
     SetIcon(wxIcon("MAINICON"));
 
@@ -64,7 +66,7 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
 
     _watcher.Connect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
     _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_saveDirectory), wxPATH_WIN),
-                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, wxString::Format("Unit??%s.sav", _localSteamId));
+                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, wxString::Format("*%s.sav", _localSteamId));
 
     _gameCheckTimer.Start(3000);
 }
@@ -210,22 +212,28 @@ void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
 
     _lastWatcherEventType = event_type;
 
-    std::string event_file =(Utility::Directory::fromNativeSeparators(event.GetNewPath().GetFullName().ToStdString()));
+    wxString event_file = event.GetNewPath().GetFullName();
 
-    if(!Utility::String::endsWith(event_file, ".sav")) {
+    if(!event_file.EndsWith(".sav")) {
         return;
     }
 
-    long slot;
+    wxMilliSleep(50);
 
-    try {
-        slot = std::stol(std::string(event_file.data() + 4, 2));
+    if(event_file == wxString::Format("Profile%s.sav", _localSteamId)) {
+        getActiveSlot();
     }
-    catch(const std::invalid_argument&) {
-        return;
-    }
+    else {
+        wxRegEx regex(wxString::Format("Unit([0-3][0-9])%s.sav", _localSteamId), wxRE_ADVANCED);
 
-    _installedListView->SetItem(slot, 1, getSlotMassName(slot));
+        if(regex.Matches(event_file)) {
+            long slot;
+
+            if(regex.GetMatch(event_file, 1).ToLong(&slot)) {
+                _installedListView->SetItem(slot, 1, getSlotMassName(slot));
+            }
+        }
+    }
 
     updateCommandsState();
 }
@@ -275,6 +283,8 @@ void EvtMainFrame::initialiseListView() {
     for(long i = 0; i < 32; i++) {
         _installedListView->InsertItem(i, wxString::Format("%.2i", i + 1));
     }
+
+    getActiveSlot();
 
     _installedListView->SetColumnWidth(0, wxLIST_AUTOSIZE_USEHEADER);
     _installedListView->SetColumnWidth(1, wxLIST_AUTOSIZE_USEHEADER);
@@ -326,6 +336,18 @@ void EvtMainFrame::refreshListView() {
     }
 
     updateCommandsState();
+}
+
+void EvtMainFrame::getActiveSlot() {
+    auto mmap = Utility::Directory::mapRead(Utility::formatString("{}/Profile{}.sav", _saveDirectory, _localSteamId));
+
+    auto iter = std::search(mmap.begin(), mmap.end(), &active_slot_locator[0], &active_slot_locator[31]);
+
+    wxFont tmp_font = _installedListView->GetItemFont(_activeSlot);
+    tmp_font.SetWeight(wxFONTWEIGHT_NORMAL);
+    _installedListView->SetItemFont(_activeSlot, tmp_font);
+    _activeSlot = (iter == mmap.end() && std::strncmp(&mmap[0x3F6], "Credit", 6) == 0) ? 0 : *(iter + 41);
+    _installedListView->SetItemFont(_activeSlot, _installedListView->GetItemFont(_activeSlot).Bold());
 }
 
 void EvtMainFrame::updateCommandsState() {

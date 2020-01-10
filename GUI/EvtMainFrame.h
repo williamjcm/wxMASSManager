@@ -44,6 +44,7 @@ class EvtMainFrame: public MainFrame {
         void initialiseListView();
         void isGameRunning();
         void refreshListView();
+        void getActiveSlot();
         void updateCommandsState();
         std::string getSlotMassName(int index);
         std::string getMassName(const std::string& filename);
@@ -55,6 +56,7 @@ class EvtMainFrame: public MainFrame {
         std::string _saveDirectory;
         std::string _localSteamId;
         bool _isGameRunning = false;
+        char _activeSlot = 0;
 
         wxFileSystemWatcher _watcher;
         int _lastWatcherEventType = 0;
