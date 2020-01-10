@@ -28,20 +28,20 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_installedListView->AppendColumn("M.A.S.S. name", wxLIST_FORMAT_LEFT);
 	sbSizerInstalled->Add( _installedListView, 1, wxALL|wxEXPAND, 5 );
 
-	wxBoxSizer* bSizerInstalledButtons;
-	bSizerInstalledButtons = new wxBoxSizer( wxHORIZONTAL );
+	wxStaticBoxSizer* sbSizerButtons;
+	sbSizerButtons = new wxStaticBoxSizer( new wxStaticBox( sbSizerInstalled->GetStaticBox(), wxID_ANY, wxT("Hangar actions") ), wxHORIZONTAL );
 
-	_importButton = new wxButton( sbSizerInstalled->GetStaticBox(), wxID_ANY, wxT("Import"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizerInstalledButtons->Add( _importButton, 1, wxALL|wxEXPAND, 5 );
+	_importButton = new wxButton( sbSizerButtons->GetStaticBox(), wxID_ANY, wxT("Import"), wxDefaultPosition, wxDefaultSize, 0 );
+	sbSizerButtons->Add( _importButton, 1, wxALL|wxEXPAND, 5 );
 
-	_moveButton = new wxButton( sbSizerInstalled->GetStaticBox(), wxID_ANY, wxT("Move"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizerInstalledButtons->Add( _moveButton, 1, wxALL|wxEXPAND, 5 );
+	_moveButton = new wxButton( sbSizerButtons->GetStaticBox(), wxID_ANY, wxT("Move"), wxDefaultPosition, wxDefaultSize, 0 );
+	sbSizerButtons->Add( _moveButton, 1, wxALL|wxEXPAND, 5 );
 
-	_deleteButton = new wxButton( sbSizerInstalled->GetStaticBox(), wxID_ANY, wxT("Delete"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizerInstalledButtons->Add( _deleteButton, 1, wxALL|wxEXPAND, 5 );
+	_deleteButton = new wxButton( sbSizerButtons->GetStaticBox(), wxID_ANY, wxT("Delete"), wxDefaultPosition, wxDefaultSize, 0 );
+	sbSizerButtons->Add( _deleteButton, 1, wxALL|wxEXPAND, 5 );
 
 
-	sbSizerInstalled->Add( bSizerInstalledButtons, 0, wxEXPAND, 5 );
+	sbSizerInstalled->Add( sbSizerButtons, 0, wxEXPAND, 5 );
 
 	wxBoxSizer* bSizerSecondRow;
 	bSizerSecondRow = new wxBoxSizer( wxHORIZONTAL );
@@ -50,7 +50,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	bSizerSecondRow->Add( 0, 0, 1, wxEXPAND, 5 );
 
 	_openSaveDirButton = new wxButton( sbSizerInstalled->GetStaticBox(), wxID_ANY, wxT("Open save directory"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizerSecondRow->Add( _openSaveDirButton, 1, wxALL|wxEXPAND, 5 );
+	bSizerSecondRow->Add( _openSaveDirButton, 1, wxEXPAND|wxALL, 5 );
 
 
 	bSizerSecondRow->Add( 0, 0, 1, wxEXPAND, 5 );
