@@ -36,11 +36,13 @@ class EvtMainFrame: public MainFrame {
         void installedSelectionEvent(wxListEvent&);
         void listColumnDragEvent(wxListEvent&);
         void fileUpdateEvent(wxFileSystemWatcherEvent& event);
+        void gameCheckTimerEvent(wxTimerEvent&);
 
     private:
         void getSaveDirectory();
         void getLocalSteamId();
         void initialiseListView();
+        void isGameRunning();
         void refreshListView();
         void updateCommandsState();
         std::string getSlotMassName(int index);
@@ -52,6 +54,7 @@ class EvtMainFrame: public MainFrame {
 
         std::string _saveDirectory;
         std::string _localSteamId;
+        bool _isGameRunning = false;
 
         wxFileSystemWatcher _watcher;
         int _lastWatcherEventType = 0;

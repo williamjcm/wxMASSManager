@@ -45,4 +45,5 @@ target_link_libraries(wxMASSManager PRIVATE
     Corrade::Containers
     Corrade::Utility
     wx_baseu-3.0
-    wx_mswu_core-3.0)
+    wx_mswu_core-3.0
+    wtsapi32)

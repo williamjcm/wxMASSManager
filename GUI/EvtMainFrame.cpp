@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <cstring>
+
 #include <algorithm>
 #include <vector>
 
@@ -24,6 +26,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <shlobj.h>
+#include <wtsapi32.h>
 
 #include <Corrade/Containers/Array.h>
 #include <Corrade/Utility/Directory.h>
@@ -46,6 +49,8 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
     getLocalSteamId();
     initialiseListView();
 
+    isGameRunning();
+
     _installedListView->Connect(wxEVT_LIST_ITEM_SELECTED, wxListEventHandler(EvtMainFrame::installedSelectionEvent), nullptr, this);
     _installedListView->Connect(wxEVT_LIST_ITEM_DESELECTED, wxListEventHandler(EvtMainFrame::installedSelectionEvent), nullptr, this);
     _installedListView->Connect(wxEVT_LIST_BEGIN_DRAG, wxListEventHandler(EvtMainFrame::listColumnDragEvent), nullptr, this);
@@ -60,6 +65,8 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
     _watcher.Connect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
     _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_saveDirectory), wxPATH_WIN),
                      wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, wxString::Format("Unit??%s.sav", _localSteamId));
+
+    _gameCheckTimer.Start(3000);
 }
 
 EvtMainFrame::~EvtMainFrame() {
@@ -95,6 +102,11 @@ void EvtMainFrame::importEvent(wxCommandEvent&) {
 
     if(wxMessageBox(wxString::Format("Are you sure you want to import the M.A.S.S. named \"%s\" to hangar %.2d ?", mass_name, _installedListView->GetFirstSelected() + 1),
                     "Question", wxYES_NO|wxCENTRE|wxICON_QUESTION, this) == wxNO) {
+        return;
+    }
+
+    if(_isGameRunning) {
+        errorMessage("The game is running. Aborting...");
         return;
     }
 
@@ -135,6 +147,11 @@ void EvtMainFrame::moveEvent(wxCommandEvent&) {
         return;
     }
 
+    if(_isGameRunning) {
+        errorMessage("The game is running. Aborting...");
+        return;
+    }
+
     std::string orig_file = Utility::formatString("{}/Unit{:.2d}{}.sav", _saveDirectory, source_slot, _localSteamId);
     std::string dest_status = _installedListView->GetItemText(choice, 1).ToStdString();
     std::string dest_file = Utility::formatString("{}/Unit{:.2d}{}.sav", _saveDirectory, choice, _localSteamId);
@@ -156,6 +173,11 @@ void EvtMainFrame::moveEvent(wxCommandEvent&) {
 void EvtMainFrame::deleteEvent(wxCommandEvent&) {
     if(wxMessageBox(wxString::Format("Are you sure you want to delete the data in hangar %.2d ? This operation cannot be undone.", _installedListView->GetFirstSelected() + 1),
                     "Are you sure ?", wxYES_NO|wxCENTRE|wxICON_QUESTION, this) == wxNO) {
+        return;
+    }
+
+    if(_isGameRunning) {
+        errorMessage("The game is running. Aborting...");
         return;
     }
 
@@ -208,6 +230,10 @@ void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
     updateCommandsState();
 }
 
+void EvtMainFrame::gameCheckTimerEvent(wxTimerEvent&) {
+    isGameRunning();
+}
+
 void EvtMainFrame::getSaveDirectory() {
     wchar_t h[MAX_PATH];
     if(!SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, h))) {
@@ -256,6 +282,44 @@ void EvtMainFrame::initialiseListView() {
     refreshListView();
 }
 
+void EvtMainFrame::isGameRunning() {
+    WTS_PROCESS_INFOW* process_infos = nullptr;
+    unsigned long process_count = 0;
+
+    if(WTSEnumerateProcessesW(WTS_CURRENT_SERVER_HANDLE, 0, 1, &process_infos, &process_count)) {
+        for(unsigned long i = 0; i < process_count; ++i) {
+            if(std::wcscmp(process_infos[i].pProcessName, L"MASS_Builder-Win64-Shipping.exe") == 0) {
+                _isGameRunning = true;
+                break;
+            }
+            else {
+                _isGameRunning = false;
+            }
+        }
+
+        if(_isGameRunning) {
+            _gameStatus->SetLabel("running");
+            _gameStatus->SetForegroundColour(wxColour("red"));
+        }
+        else {
+            _gameStatus->SetLabel("not running");
+            _gameStatus->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_CAPTIONTEXT));
+        }
+    }
+    else {
+        _isGameRunning = false;
+        _gameStatus->SetLabel("unknown");
+        _gameStatus->SetForegroundColour(wxColour("orange"));
+    }
+
+    if(process_infos != nullptr) {
+        WTSFreeMemory(process_infos);
+        process_infos = nullptr;
+    }
+
+    updateCommandsState();
+}
+
 void EvtMainFrame::refreshListView() {
     for(long i = 0; i < 32; i++) {
         _installedListView->SetItem(i, 1, getSlotMassName(i));
@@ -266,30 +330,14 @@ void EvtMainFrame::refreshListView() {
 
 void EvtMainFrame::updateCommandsState() {
     long selection = _installedListView->GetFirstSelected();
-
+    wxString state = "";
     if(selection != -1) {
-        _importButton->Enable();
-
-        wxString state = _installedListView->GetItemText(selection, 1);
-        if(state != "<Empty>" && state != "<Invalid data>") {
-            _moveButton->Enable();
-        }
-        else {
-            _moveButton->Disable();
-        }
-
-        if(state != "<Empty>") {
-            _deleteButton->Enable();
-        }
-        else {
-            _deleteButton->Disable();
-        }
+        state = _installedListView->GetItemText(selection, 1);
     }
-    else {
-        _importButton->Disable();
-        _moveButton->Disable();
-        _deleteButton->Disable();
-    }
+
+    _importButton->Enable(selection != -1 && !_isGameRunning);
+    _moveButton->Enable(selection != -1 && !_isGameRunning && state != "<Empty>" && state != "<Invalid data>");
+    _deleteButton->Enable(selection != -1 && !_isGameRunning && state != "<Empty>");
 }
 
 std::string EvtMainFrame::getSlotMassName(int index) {

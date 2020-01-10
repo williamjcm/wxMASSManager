@@ -69,7 +69,24 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_riskLabel->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	_riskLabel->SetForegroundColour( wxColour( 255, 0, 0 ) );
 
-	bSizerMain->Add( _riskLabel, 0, wxALIGN_CENTER_HORIZONTAL|wxEXPAND|wxTOP|wxRIGHT|wxLEFT, 5 );
+	bSizerMain->Add( _riskLabel, 0, wxALIGN_CENTER_HORIZONTAL|wxTOP|wxRIGHT|wxLEFT, 5 );
+
+	wxBoxSizer* bSizerGameStatus;
+	bSizerGameStatus = new wxBoxSizer( wxHORIZONTAL );
+
+	_gameStatusLabel = new wxStaticText( this, wxID_ANY, wxT("Game status:"), wxDefaultPosition, wxDefaultSize, 0 );
+	_gameStatusLabel->Wrap( -1 );
+	bSizerGameStatus->Add( _gameStatusLabel, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxEXPAND|wxTOP|wxBOTTOM|wxLEFT, 5 );
+
+	_gameStatus = new wxStaticText( this, wxID_ANY, wxT("not running"), wxDefaultPosition, wxDefaultSize, 0 );
+	_gameStatus->Wrap( -1 );
+	_gameStatus->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
+	_gameStatus->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_CAPTIONTEXT ) );
+
+	bSizerGameStatus->Add( _gameStatus, 0, wxALL, 5 );
+
+
+	bSizerMain->Add( bSizerGameStatus, 0, wxALIGN_CENTER_HORIZONTAL, 5 );
 
 	_aboutText = new wxStaticText( this, wxID_ANY, wxT("This version of the application was tested on M.A.S.S. Builder early access version 0.2.4.\nIt may or may not work with other versions of the game.\nMade for the M.A.S.S. Builder community by Guillaume Jacquemin.\nhttps://github.com/williamjcm/wxMASSManager"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL );
 	_aboutText->Wrap( -1 );
@@ -79,6 +96,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	this->SetSizer( bSizerMain );
 	this->Layout();
 	bSizerMain->Fit( this );
+	_gameCheckTimer.SetOwner( this, wxID_ANY );
 
 	this->Centre( wxBOTH );
 
@@ -87,6 +105,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveEvent ), NULL, this );
 	_deleteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteEvent ), NULL, this );
 	_openSaveDirButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
+	this->Connect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( MainFrame::gameCheckTimerEvent ) );
 }
 
 MainFrame::~MainFrame()
@@ -96,5 +115,6 @@ MainFrame::~MainFrame()
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveEvent ), NULL, this );
 	_deleteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteEvent ), NULL, this );
 	_openSaveDirButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
+	this->Disconnect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( MainFrame::gameCheckTimerEvent ) );
 
 }

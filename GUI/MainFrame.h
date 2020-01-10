@@ -22,6 +22,7 @@
 #include <wx/sizer.h>
 #include <wx/statbox.h>
 #include <wx/stattext.h>
+#include <wx/timer.h>
 #include <wx/frame.h>
 
 ///////////////////////////////////////////////////////////////////////////
@@ -41,13 +42,17 @@ class MainFrame : public wxFrame
 		wxButton* _deleteButton;
 		wxButton* _openSaveDirButton;
 		wxStaticText* _riskLabel;
+		wxStaticText* _gameStatusLabel;
+		wxStaticText* _gameStatus;
 		wxStaticText* _aboutText;
+		wxTimer _gameCheckTimer;
 
 		// Virtual event handlers, overide them in your derived class
 		virtual void importEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void moveEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void deleteEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void openSaveDirEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void gameCheckTimerEvent( wxTimerEvent& event ) { event.Skip(); }
 
 
 	public:
