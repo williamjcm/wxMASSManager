@@ -23,6 +23,8 @@
 #include <wx/msgdlg.h>
 #include <wx/numdlg.h>
 #include <wx/regex.h>
+#include <wx/wfstream.h>
+#include <wx/zipstrm.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <shlobj.h>
@@ -187,6 +189,36 @@ void EvtMainFrame::deleteEvent(wxCommandEvent&) {
 
     if(Utility::Directory::exists(file)) {
         Utility::Directory::rm(file);
+    }
+}
+
+void EvtMainFrame::backupEvent(wxCommandEvent&) {
+    wxString current_timestamp = wxDateTime::Now().Format("%Y-%m-%d_%H-%M-%S");
+
+    wxFileDialog save_dialog{this, "Choose output location", _saveDirectory,
+                             wxString::Format("backup_%s_%s.zip", _localSteamId, current_timestamp), "Zip archive (*zip)|*zip",
+                             wxFD_SAVE|wxFD_OVERWRITE_PROMPT};
+
+    if(save_dialog.ShowModal() == wxID_CANCEL) {
+        return;
+    }
+
+    wxFFileOutputStream out{save_dialog.GetPath()};
+    wxZipOutputStream zip{out};
+
+    {
+        zip.PutNextEntry(wxString::Format("Profile%s.sav", _localSteamId));
+        wxFFileInputStream profile_stream{wxString::Format("%s\\Profile%s.sav", Utility::Directory::toNativeSeparators(_saveDirectory), _localSteamId), "rb"};
+        zip.Write(profile_stream);
+    }
+
+    for(int i = 0; i < 32; ++i) {
+        std::string unit_file = Utility::formatString("Unit{:.2d}{}.sav", i, _localSteamId);
+        if(Utility::Directory::exists(Utility::Directory::join(_saveDirectory, unit_file))) {
+            zip.PutNextEntry(unit_file);
+            wxFFileInputStream unit_stream{Utility::Directory::toNativeSeparators(Utility::Directory::join(_saveDirectory, unit_file))};
+            zip.Write(unit_stream);
+        }
     }
 }
 

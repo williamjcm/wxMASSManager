@@ -49,8 +49,11 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	bSizerSecondRow->Add( 0, 0, 1, wxEXPAND, 5 );
 
+	_zipButton = new wxButton( sbSizerInstalled->GetStaticBox(), wxID_ANY, wxT("Backup save files"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizerSecondRow->Add( _zipButton, 2, wxALL|wxEXPAND, 5 );
+
 	_openSaveDirButton = new wxButton( sbSizerInstalled->GetStaticBox(), wxID_ANY, wxT("Open save directory"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizerSecondRow->Add( _openSaveDirButton, 1, wxEXPAND|wxALL, 5 );
+	bSizerSecondRow->Add( _openSaveDirButton, 2, wxEXPAND|wxALL, 5 );
 
 
 	bSizerSecondRow->Add( 0, 0, 1, wxEXPAND, 5 );
@@ -104,6 +107,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_importButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::importEvent ), NULL, this );
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveEvent ), NULL, this );
 	_deleteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteEvent ), NULL, this );
+	_zipButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupEvent ), NULL, this );
 	_openSaveDirButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
 	this->Connect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( MainFrame::gameCheckTimerEvent ) );
 }
@@ -114,6 +118,7 @@ MainFrame::~MainFrame()
 	_importButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::importEvent ), NULL, this );
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveEvent ), NULL, this );
 	_deleteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteEvent ), NULL, this );
+	_zipButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupEvent ), NULL, this );
 	_openSaveDirButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
 	this->Disconnect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( MainFrame::gameCheckTimerEvent ) );
 

@@ -32,6 +32,7 @@ class EvtMainFrame: public MainFrame {
         void importEvent(wxCommandEvent&);
         void moveEvent(wxCommandEvent&);
         void deleteEvent(wxCommandEvent&);
+        void backupEvent(wxCommandEvent&);
         void openSaveDirEvent(wxCommandEvent&);
         void installedSelectionEvent(wxListEvent&);
         void listColumnDragEvent(wxListEvent&);

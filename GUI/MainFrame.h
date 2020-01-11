@@ -40,6 +40,7 @@ class MainFrame : public wxFrame
 		wxButton* _importButton;
 		wxButton* _moveButton;
 		wxButton* _deleteButton;
+		wxButton* _zipButton;
 		wxButton* _openSaveDirButton;
 		wxStaticText* _riskLabel;
 		wxStaticText* _gameStatusLabel;
@@ -51,6 +52,7 @@ class MainFrame : public wxFrame
 		virtual void importEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void moveEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void deleteEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void backupEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void openSaveDirEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void gameCheckTimerEvent( wxTimerEvent& event ) { event.Skip(); }
 
