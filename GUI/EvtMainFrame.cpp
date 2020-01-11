@@ -346,8 +346,22 @@ void EvtMainFrame::getActiveSlot() {
     wxFont tmp_font = _installedListView->GetItemFont(_activeSlot);
     tmp_font.SetWeight(wxFONTWEIGHT_NORMAL);
     _installedListView->SetItemFont(_activeSlot, tmp_font);
-    _activeSlot = (iter == mmap.end() && std::strncmp(&mmap[0x3F6], "Credit", 6) == 0) ? 0 : *(iter + 41);
-    _installedListView->SetItemFont(_activeSlot, _installedListView->GetItemFont(_activeSlot).Bold());
+
+    if(iter == mmap.end()) {
+        if(std::strncmp(&mmap[0x3F6], "Credit", 6)) {
+            _activeSlot = 0;
+        }
+        else {
+            _activeSlot = -1;
+        }
+    }
+    else {
+        _activeSlot = *(iter + 41);
+    }
+
+    if(_activeSlot != -1) {
+        _installedListView->SetItemFont(_activeSlot, _installedListView->GetItemFont(_activeSlot).Bold());
+    }
 }
 
 void EvtMainFrame::updateCommandsState() {
