@@ -348,7 +348,7 @@ void EvtMainFrame::getActiveSlot() {
     _installedListView->SetItemFont(_activeSlot, tmp_font);
 
     if(iter == mmap.end()) {
-        if(std::strncmp(&mmap[0x3F6], "Credit", 6)) {
+        if(std::strncmp(&mmap[0x3F6], "Credit", 6) == 0) {
             _activeSlot = 0;
         }
         else {
