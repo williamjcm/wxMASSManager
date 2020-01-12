@@ -4,7 +4,7 @@ A manager for M.A.S.S. save files, to facilitate sharing of M.A.S.S.es between u
 
 ## Installing
 
-Get the `wxMASSManager-win64.zip` file from the Releases page, and extract it somewhere. Then, open the `wxMASSManager` folder and launch `wxMASSManager.exe`.
+Get the `wxMASSManager-<version>-win64.zip` file from the Releases page, and extract it somewhere. Then, open the `wxMASSManager` folder and launch `wxMASSManager.exe`.
 
 ## Building on MSYS2
 
