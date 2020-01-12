@@ -39,6 +39,8 @@ add_executable(wxMASSManager WIN32
     GUI/MainFrame.cpp
     GUI/EvtMainFrame.h
     GUI/EvtMainFrame.cpp
+    MassManager/MassManager.h
+    MassManager/MassManager.cpp
     resource.rc)
 
 target_link_libraries(wxMASSManager PRIVATE

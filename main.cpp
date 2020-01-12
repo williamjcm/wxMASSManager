@@ -25,8 +25,12 @@ class MyApp: public wxApp {
             SetAppDisplayName("wxMASSManager");
 
             EvtMainFrame* main_frame = new EvtMainFrame(nullptr);
-            main_frame->Show();
 
+            if(!main_frame->ready()) {
+                return false;
+            }
+
+            main_frame->Show();
             return true;
         }
 };

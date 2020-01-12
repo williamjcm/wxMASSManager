@@ -14,43 +14,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include <cstring>
-
-#include <algorithm>
-#include <vector>
-
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
 #include <wx/numdlg.h>
 #include <wx/regex.h>
-#include <wx/wfstream.h>
-#include <wx/zipstrm.h>
 
-#define WIN32_LEAN_AND_MEAN
-#include <shlobj.h>
-#include <wtsapi32.h>
-
-#include <Corrade/Containers/Array.h>
+#include <Corrade/Containers/Optional.h>
 #include <Corrade/Utility/Directory.h>
-#include <Corrade/Utility/FormatStl.h>
-#include <Corrade/Utility/String.h>
-#include <Corrade/Utility/Unicode.h>
 
 #include "EvtMainFrame.h"
 
 using namespace Corrade;
 
-constexpr unsigned char mass_name_locator[] = { 'N', 'a', 'm', 'e', '_', '4', '5', '_', 'A', '0', '3', '7', 'C', '5', 'D', '5', '4', 'E', '5', '3', '4', '5', '6', '4', '0', '7', 'B', 'D', 'F', '0', '9', '1', '3', '4', '4', '5', '2', '9', 'B', 'B', '\0', 0x0C, '\0', '\0', '\0', 'S', 't', 'r', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
-
-constexpr unsigned char steamid_locator[] = { 'A', 'c', 'c', 'o', 'u', 'n', 't', '\0', 0x0C, '\0', '\0', '\0', 'S', 't', 'r', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
-
-constexpr unsigned char active_slot_locator[] = { 'A', 'c', 't', 'i', 'v', 'e', 'F', 'r', 'a', 'm', 'e', 'S', 'l', 'o', 't', '\0', 0x0C, '\0', '\0', '\0', 'I', 'n', 't', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
-
 EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
     SetIcon(wxIcon("MAINICON"));
 
-    getSaveDirectory();
-    getLocalSteamId();
+    if(!_manager.ready()) {
+        errorMessage("There was an issue initialising the manager:\n\n" + _manager.lastError());
+        return;
+    }
+
     initialiseListView();
 
     isGameRunning();
@@ -62,13 +45,12 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
 
     warningMessage(wxString::FromUTF8("Before you start using this app, a few things you should know:\n\n"
                                       "For this application to work properly, Steam Cloud syncing needs to be disabled for the game.\nTo disable it, right-click the game in your Steam library, click \"Properties\", go to the \"Updates\" tab, and uncheck \"Enable Steam Cloud synchronization for M.A.S.S. Builder\".\n\n"
-                                      "Please avoid using this application while the game is running. Bad Things™ could happen to your data.\n\n"
                                       "DISCLAIMER: The developer of this application cannot be held responsible for data loss or corruption. PLEASE USE AT YOUR OWN RISK!\n\n"
                                       "Last but not least, this application is released under the terms of the GNU General Public Licence version 3. Please see the COPYING file for more details."));
 
     _watcher.Connect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
-    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_saveDirectory), wxPATH_WIN),
-                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, wxString::Format("*%s.sav", _localSteamId));
+    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.saveDirectory()), wxPATH_WIN),
+                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, wxString::Format("*%s.sav", _manager.steamId()));
 
     _gameCheckTimer.Start(3000);
 }
@@ -81,11 +63,19 @@ EvtMainFrame::~EvtMainFrame() {
     _watcher.Disconnect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
 }
 
-void EvtMainFrame::importEvent(wxCommandEvent&) {
-    std::string slot_state = _installedListView->GetItemText(_installedListView->GetFirstSelected(), 1).ToStdString();
+bool EvtMainFrame::ready() {
+    return _manager.ready();
+}
 
-    if(slot_state != "<Empty>" && slot_state != "<Invalid data>" &&
-       wxMessageBox(wxString::Format("Hangar %.2d is already occupied by the M.A.S.S. named \"%s\". Are you sure you want to import a M.A.S.S. to this hangar ?", _installedListView->GetFirstSelected() + 1, slot_state),
+void EvtMainFrame::importEvent(wxCommandEvent&) {
+    const static std::string error_prefix = "Importing failed:\n\n";
+
+    long selected_hangar = _installedListView->GetFirstSelected();
+    HangarState hangar_state = _manager.hangarState(selected_hangar);
+
+    if(hangar_state == HangarState::Filled &&
+       wxMessageBox(wxString::Format("Hangar %.2d is already occupied by the M.A.S.S. named \"%s\". Are you sure you want to import a M.A.S.S. to this hangar ?",
+                                     selected_hangar + 1, *(_manager.massName(selected_hangar))),
                     "Question", wxYES_NO|wxCENTRE|wxICON_QUESTION, this) == wxNO) {
         return;
     }
@@ -98,132 +88,107 @@ void EvtMainFrame::importEvent(wxCommandEvent&) {
 
     const std::string source_file = dialog.GetPath().ToUTF8().data();
 
-    const std::string mass_name = getMassName(source_file);
+    Containers::Optional<std::string> mass_name = _manager.getMassName(source_file);
 
-    if(mass_name == "") {
+    if(!mass_name) {
+        errorMessage(error_prefix + _manager.lastError());
         return;
     }
 
-    if(wxMessageBox(wxString::Format("Are you sure you want to import the M.A.S.S. named \"%s\" to hangar %.2d ?", mass_name, _installedListView->GetFirstSelected() + 1),
+    if(wxMessageBox(wxString::Format("Are you sure you want to import the M.A.S.S. named \"%s\" to hangar %.2d ?", *mass_name, selected_hangar + 1),
                     "Question", wxYES_NO|wxCENTRE|wxICON_QUESTION, this) == wxNO) {
         return;
     }
 
-    if(_isGameRunning) {
-        errorMessage("The game is running. Aborting...");
-        return;
-    }
-
-    const std::string dest_file = _saveDirectory + Utility::formatString("/Unit{:.2d}{}.sav", _installedListView->GetFirstSelected(), _localSteamId);
-
-    if(Utility::Directory::exists(dest_file)) {
-        Utility::Directory::rm(dest_file);
-    }
-
-    Utility::Directory::copy(source_file, dest_file);
-
-    {
-        auto mmap = Utility::Directory::map(dest_file);
-
-        auto iter = std::search(mmap.begin(), mmap.end(), &steamid_locator[0], &steamid_locator[23]);
-
-        if(iter == mmap.end()) {
-            errorMessage("Couldn't find the SteamID in the unit file at " + source_file + ". Aborting...");
-            Utility::Directory::rm(dest_file);
-            return;
-        }
-
-        iter += 37;
-
-        for(int i = 0; i < 17; ++i) {
-            *(iter + i) = _localSteamId[i];
-        }
+    switch(_manager.gameState()) {
+        case GameState::Unknown:
+            errorMessage(error_prefix + "For security reasons, importing is disabled if the game's status is unknown.");
+            break;
+        case GameState::NotRunning:
+            if(!_manager.importMass(source_file, selected_hangar)) {
+                errorMessage(error_prefix + _manager.lastError());
+            }
+            break;
+        case GameState::Running:
+            errorMessage(error_prefix + "Importing a M.A.S.S. is disabled while the game is running.");
+            break;
     }
 }
 
 void EvtMainFrame::moveEvent(wxCommandEvent&) {
+    const static std::string error_prefix = "Move failed:\n\n";
+
     long source_slot = _installedListView->GetFirstSelected();
 
-    long choice = wxGetNumberFromUser(wxString::Format("Which hangar do you want to move the M.A.S.S. named \"%s\" to ?\nNotes:\n- If the destination hangar is the same as the source, nothing will happen.\n- If the destination already contains a M.A.S.S., the two will be swapped.\n- If the destination contains invalid data, it will be cleared first.", _installedListView->GetItemText(source_slot, 1)),
+    long choice = wxGetNumberFromUser(wxString::Format("Which hangar do you want to move the M.A.S.S. named \"%s\" to ?\nNotes:\n"
+                                                       "- If the destination hangar is the same as the source, nothing will happen.\n"
+                                                       "- If the destination already contains a M.A.S.S., the two will be swapped.\n"
+                                                       "- If the destination contains invalid data, it will be cleared first.",
+                                                       *(_manager.massName(source_slot))),
                                       "Slot", "Choose a slot", source_slot + 1, 1, 32, this) - 1;
 
     if(choice == -1 || choice == source_slot) {
         return;
     }
 
-    if(_isGameRunning) {
-        errorMessage("The game is running. Aborting...");
-        return;
-    }
-
-    std::string orig_file = Utility::formatString("{}/Unit{:.2d}{}.sav", _saveDirectory, source_slot, _localSteamId);
-    std::string dest_status = _installedListView->GetItemText(choice, 1).ToStdString();
-    std::string dest_file = Utility::formatString("{}/Unit{:.2d}{}.sav", _saveDirectory, choice, _localSteamId);
-
-    if(dest_status == "<Invalid data>") {
-        Utility::Directory::rm(dest_file);
-    }
-    else if(dest_status != "<Empty>") {
-        Utility::Directory::move(dest_file, dest_file + ".tmp");
-    }
-
-    Utility::Directory::move(orig_file, dest_file);
-
-    if(dest_status != "<Empty>") {
-        Utility::Directory::move(dest_file + ".tmp", orig_file);
+    switch(_manager.gameState()) {
+        case GameState::Unknown:
+            errorMessage(error_prefix + "For security reasons, moving a M.A.S.S. is disabled if the game's status is unknown.");
+            break;
+        case GameState::NotRunning:
+            if(!_manager.moveMass(source_slot, choice)) {
+                errorMessage(error_prefix + _manager.lastError());
+            }
+            break;
+        case GameState::Running:
+            errorMessage(error_prefix + "Moving a M.A.S.S. is disabled while the game is running.");
+            break;
     }
 }
 
 void EvtMainFrame::deleteEvent(wxCommandEvent&) {
+    const static std::string error_prefix = "Deletion failed:\n\n";
+
     if(wxMessageBox(wxString::Format("Are you sure you want to delete the data in hangar %.2d ? This operation cannot be undone.", _installedListView->GetFirstSelected() + 1),
                     "Are you sure ?", wxYES_NO|wxCENTRE|wxICON_QUESTION, this) == wxNO) {
         return;
     }
 
-    if(_isGameRunning) {
-        errorMessage("The game is running. Aborting...");
-        return;
-    }
-
-    std::string file = Utility::formatString("{}/Unit{:.2d}{}.sav", _saveDirectory, _installedListView->GetFirstSelected(), _localSteamId);
-
-    if(Utility::Directory::exists(file)) {
-        Utility::Directory::rm(file);
+    switch(_manager.gameState()) {
+        case GameState::Unknown:
+            errorMessage(error_prefix + "For security reasons, deleting a M.A.S.S. is disabled if the game's status is unknown.");
+            break;
+        case GameState::NotRunning:
+            if(!_manager.deleteMass(_installedListView->GetFirstSelected())) {
+                errorMessage(error_prefix + _manager.lastError());
+            }
+            break;
+        case GameState::Running:
+            errorMessage(error_prefix + "Deleting a M.A.S.S. is disabled while the game is running.");
+            break;
     }
 }
 
 void EvtMainFrame::backupEvent(wxCommandEvent&) {
+    const static std::string error_prefix = "Backup failed:\n\n";
+
     wxString current_timestamp = wxDateTime::Now().Format("%Y-%m-%d_%H-%M-%S");
 
-    wxFileDialog save_dialog{this, "Choose output location", _saveDirectory,
-                             wxString::Format("backup_%s_%s.zip", _localSteamId, current_timestamp), "Zip archive (*zip)|*zip",
+    wxFileDialog save_dialog{this, "Choose output location", _manager.saveDirectory(),
+                             wxString::Format("backup_%s_%s.zip", _manager.steamId(), current_timestamp), "Zip archive (*zip)|*zip",
                              wxFD_SAVE|wxFD_OVERWRITE_PROMPT};
 
     if(save_dialog.ShowModal() == wxID_CANCEL) {
         return;
     }
 
-    wxFFileOutputStream out{save_dialog.GetPath()};
-    wxZipOutputStream zip{out};
-
-    {
-        zip.PutNextEntry(wxString::Format("Profile%s.sav", _localSteamId));
-        wxFFileInputStream profile_stream{wxString::Format("%s\\Profile%s.sav", Utility::Directory::toNativeSeparators(_saveDirectory), _localSteamId), "rb"};
-        zip.Write(profile_stream);
-    }
-
-    for(int i = 0; i < 32; ++i) {
-        std::string unit_file = Utility::formatString("Unit{:.2d}{}.sav", i, _localSteamId);
-        if(Utility::Directory::exists(Utility::Directory::join(_saveDirectory, unit_file))) {
-            zip.PutNextEntry(unit_file);
-            wxFFileInputStream unit_stream{Utility::Directory::toNativeSeparators(Utility::Directory::join(_saveDirectory, unit_file))};
-            zip.Write(unit_stream);
-        }
+    if(!_manager.backupSaves(save_dialog.GetPath().ToStdString())) {
+        errorMessage(error_prefix + _manager.lastError());
     }
 }
 
 void EvtMainFrame::openSaveDirEvent(wxCommandEvent&) {
-    wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_saveDirectory));
+    wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_manager.saveDirectory()));
 }
 
 void EvtMainFrame::installedSelectionEvent(wxListEvent&) {
@@ -236,79 +201,76 @@ void EvtMainFrame::listColumnDragEvent(wxListEvent& event) {
 
 void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
     int event_type = event.GetChangeType();
+    wxString event_file = event.GetPath().GetFullName();
 
     if(event_type == wxFSW_EVENT_MODIFY && _lastWatcherEventType == wxFSW_EVENT_RENAME) {
         _lastWatcherEventType = event_type;
         return;
     }
 
-    _lastWatcherEventType = event_type;
-
-    wxString event_file = event.GetNewPath().GetFullName();
-
-    if(!event_file.EndsWith(".sav")) {
-        return;
-    }
-
     wxMilliSleep(50);
 
-    if(event_file == wxString::Format("Profile%s.sav", _localSteamId)) {
-        getActiveSlot();
-    }
-    else {
-        wxRegEx regex(wxString::Format("Unit([0-3][0-9])%s.sav", _localSteamId), wxRE_ADVANCED);
+    wxRegEx regex;
 
-        if(regex.Matches(event_file)) {
-            long slot;
+    switch (event_type) {
+        case wxFSW_EVENT_CREATE:
+        case wxFSW_EVENT_DELETE:
+            regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav", _manager.steamId()), wxRE_ADVANCED);
+            if(regex.Matches(event_file)) {
+                long slot;
 
-            if(regex.GetMatch(event_file, 1).ToLong(&slot)) {
-                _installedListView->SetItem(slot, 1, getSlotMassName(slot));
+                if(regex.GetMatch(event_file, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
+                    refreshHangar(slot);
+                }
             }
-        }
+            break;
+        case wxFSW_EVENT_MODIFY:
+            if(_lastWatcherEventType == wxFSW_EVENT_RENAME) {
+                break;
+            }
+            if(event_file == _manager.profileSaveName()) {
+                getActiveSlot();
+            }
+            else {
+                regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav", _manager.steamId()), wxRE_ADVANCED);
+                if(regex.Matches(event_file)) {
+                    long slot;
+
+                    if(regex.GetMatch(event_file, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
+                        refreshHangar(slot);
+                    }
+                }
+            }
+            break;
+        case wxFSW_EVENT_RENAME:
+            wxString new_name = event.GetNewPath().GetFullName();
+
+            long slot;
+            if(regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav\\.tmp", _manager.steamId()), wxRE_ADVANCED), regex.Matches(new_name)) {
+                if(regex.GetMatch(new_name, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
+                    refreshHangar(slot);
+                }
+            }
+            else if(regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav", _manager.steamId()), wxRE_ADVANCED), regex.Matches(new_name)) {
+                if(regex.GetMatch(new_name, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
+                    refreshHangar(slot);
+                    if(regex.Matches(event_file)) {
+                        if(regex.GetMatch(event_file, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
+                            refreshHangar(slot);
+                        }
+                    }
+                }
+            }
+            break;
     }
+
+    _lastWatcherEventType = event_type;
 
     updateCommandsState();
 }
 
 void EvtMainFrame::gameCheckTimerEvent(wxTimerEvent&) {
     isGameRunning();
-}
-
-void EvtMainFrame::getSaveDirectory() {
-    wchar_t h[MAX_PATH];
-    if(!SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, h))) {
-        errorMessage("Couldn't get the path for %LOCALAPPDATA%. :/");
-        Close();
-        return;
-    }
-
-    _saveDirectory = Utility::Directory::join(Utility::Directory::fromNativeSeparators(Utility::Unicode::narrow(h)), "MASS_Builder/Saved/SaveGames");
-
-    if(!Utility::Directory::exists(_saveDirectory)) {
-        errorMessage("Couldn't find the M.A.S.S. Builder save directory at " + _saveDirectory + ". Please run the game at least once to create it.");
-        Close();
-    }
-}
-
-void EvtMainFrame::getLocalSteamId() {
-    std::vector<std::string> listing = Utility::Directory::list(_saveDirectory);
-
-    wxRegEx regex;
-    if(!regex.Compile("Profile([0-9]{17}).sav", wxRE_ADVANCED)) {
-        errorMessage("Couldn't compile the regex.");
-        Close();
-        return;
-    }
-
-    for(const std::string& s : listing) {
-        if(regex.Matches(s)) {
-            _localSteamId = regex.GetMatch(s, 1);
-            return;
-        }
-    }
-
-    errorMessage("Couldn't find your save files. Please play at least once.");
-    Close();
 }
 
 void EvtMainFrame::initialiseListView() {
@@ -325,110 +287,76 @@ void EvtMainFrame::initialiseListView() {
 }
 
 void EvtMainFrame::isGameRunning() {
-    WTS_PROCESS_INFOW* process_infos = nullptr;
-    unsigned long process_count = 0;
+    GameState state = _manager.checkGameState();
 
-    if(WTSEnumerateProcessesW(WTS_CURRENT_SERVER_HANDLE, 0, 1, &process_infos, &process_count)) {
-        for(unsigned long i = 0; i < process_count; ++i) {
-            if(std::wcscmp(process_infos[i].pProcessName, L"MASS_Builder-Win64-Shipping.exe") == 0) {
-                _isGameRunning = true;
-                break;
-            }
-            else {
-                _isGameRunning = false;
-            }
-        }
-
-        if(_isGameRunning) {
-            _gameStatus->SetLabel("running");
-            _gameStatus->SetForegroundColour(wxColour("red"));
-        }
-        else {
+    switch(state) {
+        case GameState::Unknown:
+            _gameStatus->SetLabel("unknown");
+            _gameStatus->SetForegroundColour(wxColour("orange"));
+            break;
+        case GameState::NotRunning:
             _gameStatus->SetLabel("not running");
             _gameStatus->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_CAPTIONTEXT));
-        }
-    }
-    else {
-        _isGameRunning = false;
-        _gameStatus->SetLabel("unknown");
-        _gameStatus->SetForegroundColour(wxColour("orange"));
-    }
-
-    if(process_infos != nullptr) {
-        WTSFreeMemory(process_infos);
-        process_infos = nullptr;
+            break;
+        case GameState::Running:
+            _gameStatus->SetLabel("running");
+            _gameStatus->SetForegroundColour(wxColour("red"));
+            break;
     }
 
     updateCommandsState();
 }
 
 void EvtMainFrame::refreshListView() {
-    for(long i = 0; i < 32; i++) {
-        _installedListView->SetItem(i, 1, getSlotMassName(i));
+    for(int i = 0; i < 32; i++) {
+        refreshHangar(i);
     }
 
     updateCommandsState();
 }
 
 void EvtMainFrame::getActiveSlot() {
-    auto mmap = Utility::Directory::mapRead(Utility::formatString("{}/Profile{}.sav", _saveDirectory, _localSteamId));
+    char slot = _manager.activeSlot();
 
-    auto iter = std::search(mmap.begin(), mmap.end(), &active_slot_locator[0], &active_slot_locator[31]);
-
-    wxFont tmp_font = _installedListView->GetItemFont(_activeSlot);
+    wxFont tmp_font = _installedListView->GetItemFont(slot);
     tmp_font.SetWeight(wxFONTWEIGHT_NORMAL);
-    _installedListView->SetItemFont(_activeSlot, tmp_font);
+    _installedListView->SetItemFont(slot, tmp_font);
 
-    if(iter == mmap.end()) {
-        if(std::strncmp(&mmap[0x3F6], "Credit", 6) == 0) {
-            _activeSlot = 0;
-        }
-        else {
-            _activeSlot = -1;
-        }
-    }
-    else {
-        _activeSlot = *(iter + 41);
-    }
+    slot = _manager.getActiveSlot();
 
-    if(_activeSlot != -1) {
-        _installedListView->SetItemFont(_activeSlot, _installedListView->GetItemFont(_activeSlot).Bold());
+    if(slot != -1) {
+        _installedListView->SetItemFont(slot, _installedListView->GetItemFont(slot).Bold());
     }
 }
 
 void EvtMainFrame::updateCommandsState() {
     long selection = _installedListView->GetFirstSelected();
-    wxString state = "";
-    if(selection != -1) {
-        state = _installedListView->GetItemText(selection, 1);
-    }
+    GameState game_state = _manager.gameState();
+    HangarState hangar_state = _manager.hangarState(selection);
 
-    _importButton->Enable(selection != -1 && !_isGameRunning);
-    _moveButton->Enable(selection != -1 && !_isGameRunning && state != "<Empty>" && state != "<Invalid data>");
-    _deleteButton->Enable(selection != -1 && !_isGameRunning && state != "<Empty>");
+    _importButton->Enable(selection != -1 && game_state != GameState::Running);
+    _moveButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty && hangar_state != HangarState::Invalid);
+    _deleteButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty);
 }
 
-std::string EvtMainFrame::getSlotMassName(int index) {
-    std::string unit_file = Utility::formatString("{}/Unit{:.2d}{}.sav", _saveDirectory, index, _localSteamId);
-    if(Utility::Directory::exists(unit_file)) {
-        std::string mass_name = getMassName(unit_file);
-        return (mass_name == "" ? "<Invalid data>" : mass_name);
-    }
-    else {
-        return "<Empty>";
-    }
-}
-
-std::string EvtMainFrame::getMassName(const std::string& filename) {
-    auto mmap = Utility::Directory::mapRead(filename);
-
-    auto iter = std::search(mmap.begin(), mmap.end(), &mass_name_locator[0], &mass_name_locator[56]);
-
-    if(iter == mmap.end()) {
-        return "";
+void EvtMainFrame::refreshHangar(int slot) {
+    if(slot < 0 && slot >= 32) {
+        return;
     }
 
-    return iter + 70;
+    _manager.refreshHangar(slot);
+
+    switch(_manager.hangarState(slot)) {
+        case HangarState::Empty:
+            _installedListView->SetItem(slot, 1, "<Empty>");
+            break;
+        case HangarState::Invalid:
+            _installedListView->SetItem(slot, 1, "<Invalid>");
+            break;
+        case HangarState::Filled:
+            _installedListView->SetItem(slot, 1, *(_manager.massName(slot)));
+            break;
+    }
 }
 
 void EvtMainFrame::infoMessage(const wxString& message) {

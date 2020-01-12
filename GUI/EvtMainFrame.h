@@ -21,12 +21,16 @@
 
 #include <wx/fswatcher.h>
 
+#include "../MassManager/MassManager.h"
+
 #include "MainFrame.h"
 
 class EvtMainFrame: public MainFrame {
     public:
         EvtMainFrame(wxWindow* parent);
         ~EvtMainFrame();
+
+        auto ready() -> bool;
 
     protected:
         void importEvent(wxCommandEvent&);
@@ -40,24 +44,18 @@ class EvtMainFrame: public MainFrame {
         void gameCheckTimerEvent(wxTimerEvent&);
 
     private:
-        void getSaveDirectory();
-        void getLocalSteamId();
         void initialiseListView();
         void isGameRunning();
         void refreshListView();
         void getActiveSlot();
         void updateCommandsState();
-        std::string getSlotMassName(int index);
-        std::string getMassName(const std::string& filename);
+        void refreshHangar(int slot);
 
         void infoMessage(const wxString& message);
         void warningMessage(const wxString& message);
         void errorMessage(const wxString& message);
 
-        std::string _saveDirectory;
-        std::string _localSteamId;
-        bool _isGameRunning = false;
-        char _activeSlot = 0;
+        MassManager _manager;
 
         wxFileSystemWatcher _watcher;
         int _lastWatcherEventType = 0;
