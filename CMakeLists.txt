@@ -32,6 +32,8 @@ find_package(Corrade REQUIRED Containers Utility)
 include_directories(SYSTEM "C:/msys64/mingw64/lib/wx/include/msw-unicode-3.0")
 include_directories(SYSTEM "C:/msys64/mingw64/include/wx-3.0")
 
+set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
+
 add_executable(wxMASSManager WIN32
     main.cpp
     GUI/MainFrame.fbp
