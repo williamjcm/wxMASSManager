@@ -23,7 +23,6 @@
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 
-#define WIN32_LEAN_AND_MEAN
 #include <shlobj.h>
 #include <wtsapi32.h>
 
