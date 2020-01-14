@@ -335,6 +335,7 @@ void EvtMainFrame::updateCommandsState() {
     HangarState hangar_state = _manager.hangarState(selection);
 
     _importButton->Enable(selection != -1 && game_state != GameState::Running);
+    _exportButton->Enable(selection != -1);
     _moveButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty && hangar_state != HangarState::Invalid);
     _deleteButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty);
 }
