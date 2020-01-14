@@ -67,7 +67,7 @@ class MassManager {
         auto findSaveDirectory() -> bool;
         auto findSteamId() -> bool;
 
-        bool _ready;
+        bool _ready = false;
 
         std::string _lastError = "";
 
