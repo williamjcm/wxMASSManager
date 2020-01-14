@@ -205,7 +205,7 @@ auto MassManager::moveMass(int source, int destination) -> bool {
     return true;
 }
 
-bool MassManager::deleteMass(int hangar) {
+auto MassManager::deleteMass(int hangar) -> bool {
     if(hangar < 0 && hangar >= 32) {
         _lastError = "Hangar number out of range in MassManager::deleteMass()";
         return false;
