@@ -17,7 +17,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include <Corrade/Containers/StaticArray.h>
 #include <Corrade/Containers/Optional.h>
@@ -40,6 +42,7 @@ class MassManager {
         auto lastError() -> std::string const&;
 
         auto saveDirectory() -> std::string const&;
+        auto stagingAreaDirectory() -> std::string const&;
         auto steamId() -> std::string const&;
         auto profileSaveName() -> std::string const&;
 
@@ -50,6 +53,9 @@ class MassManager {
         auto activeSlot() -> char;
 
         auto importMass(const std::string& source, int hangar) -> bool;
+        auto importMass(int staged_index, int hangar) -> bool;
+
+        auto exportMass(int hangar) -> bool;
 
         auto moveMass(int source, int destination) -> bool;
 
@@ -63,6 +69,14 @@ class MassManager {
 
         auto getMassName(const std::string& filename) -> Containers::Optional<std::string>;
 
+        auto initialiseStagingArea() -> std::vector<std::string>;
+
+        auto updateStagedMass(const std::string& filename) -> int;
+        auto removeStagedMass(const std::string& filename) -> int;
+
+        auto stagedMassName(int index) -> std::string;
+        auto stagedMassName(const std::string& filename) -> std::string;
+
     private:
         auto findSaveDirectory() -> bool;
         auto findSteamId() -> bool;
@@ -71,6 +85,8 @@ class MassManager {
 
         std::string _lastError = "";
 
+        std::string _executableLocation = "";
+        std::string _stagingAreaDirectory = "";
         std::string _saveDirectory = "";
         std::string _steamId = "";
         std::string _profileSaveName = "";
@@ -86,6 +102,8 @@ class MassManager {
         };
 
         Containers::StaticArray<32, Hangar> _hangars{Containers::ValueInit};
+
+        std::map<std::string, std::string> _stagedMasses;
 };
 
 #endif //MASSMANAGER_H

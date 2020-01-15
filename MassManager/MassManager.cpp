@@ -17,7 +17,6 @@
 #include <cstring>
 
 #include <algorithm>
-#include <vector>
 
 #include <wx/regex.h>
 #include <wx/wfstream.h>
@@ -47,12 +46,18 @@ MassManager::MassManager() {
         return;
     }
 
+    _executableLocation = Utility::Directory::path(Utility::Directory::executableLocation());
+
+    _stagingAreaDirectory = Utility::Directory::join(_executableLocation, "staging");
+
     _profileSaveName = Utility::formatString("Profile{}.sav", _steamId);
 
     for(int i = 0; i < 32; ++i) {
         _hangars[i]._filename = Utility::formatString("Unit{:.2d}{}.sav", i, _steamId);
         refreshHangar(i);
     }
+
+    initialiseStagingArea();
 }
 
 auto MassManager::ready() -> bool {
@@ -65,6 +70,10 @@ auto MassManager::lastError() -> std::string const& {
 
 auto MassManager::saveDirectory() -> std::string const& {
     return _saveDirectory;
+}
+
+auto MassManager::stagingAreaDirectory() -> std::string const& {
+    return _stagingAreaDirectory;
 }
 
 auto MassManager::steamId() -> std::string const& {
@@ -166,6 +175,87 @@ auto MassManager::importMass(const std::string& source, int hangar) -> bool {
     }
 
     Utility::Directory::move(source + ".tmp", dest);
+
+    return true;
+}
+
+auto MassManager::importMass(int staged_index, int hangar) -> bool {
+    if(hangar < 0 && hangar >= 32) {
+        _lastError = "Hangar out of range in MassManager::importMass()";
+        return false;
+    }
+
+    int i = 0;
+    for(const auto& mass_info : _stagedMasses) {
+        if(i != staged_index) {
+            ++i;
+            continue;
+        }
+
+        std::string source = Utility::Directory::join(_stagingAreaDirectory, mass_info.first);
+
+        Utility::Directory::copy(source, source + ".tmp");
+
+        {
+            auto mmap = Utility::Directory::map(source + ".tmp");
+
+            auto iter = std::search(mmap.begin(), mmap.end(), &steamid_locator[0], &steamid_locator[23]);
+
+            if(iter == mmap.end()) {
+                _lastError = "The M.A.S.S. file at " + source + " seems to be corrupt.";
+                Utility::Directory::rm(source + ".tmp");
+                return false;
+            }
+
+            iter += 37;
+
+            if(std::strncmp(iter, _steamId.c_str(), _steamId.length()) != 0) {
+                for(int i = 0; i < 17; ++i) {
+                    *(iter + i) = _steamId[i];
+                }
+            }
+        }
+
+        const std::string dest = Utility::Directory::join(_saveDirectory, _hangars[hangar]._filename);
+
+        if(Utility::Directory::exists(dest)) {
+            Utility::Directory::rm(dest);
+        }
+
+        Utility::Directory::move(source + ".tmp", dest);
+
+        return true;
+    }
+
+    _lastError = "";
+    return false;
+}
+
+auto MassManager::exportMass(int hangar) -> bool {
+    if(hangar < 0 && hangar >= 32) {
+        _lastError = "Hangar out of range in MassManager::exportMass()";
+        return false;
+    }
+
+    if(_hangars[hangar]._state == HangarState::Empty ||
+       _hangars[hangar]._state == HangarState::Invalid) {
+        _lastError = Utility::formatString("There is no valid data to export in hangar {:.2d}", hangar);
+    }
+
+    auto name = _hangars[hangar]._massName;
+
+    if(!name) {
+        _lastError = "There was an unexpected error in MassManager::exportMass()";
+        return false;
+    }
+
+    std::string source = Utility::Directory::join(_saveDirectory, _hangars[hangar]._filename);
+    std::string dest = Utility::Directory::join(_stagingAreaDirectory, Utility::formatString("{}_{}.sav", _steamId, *(_hangars[hangar]._massName)));
+
+    if(!Utility::Directory::copy(source, dest)) {
+        _lastError = Utility::formatString("Couldn't export data from hangar {:.2d} to {}", hangar, dest);
+        return false;
+    }
 
     return true;
 }
@@ -306,6 +396,103 @@ auto MassManager::getMassName(const std::string& filename) -> Containers::Option
     }
 
     return name;
+}
+
+auto MassManager::initialiseStagingArea() -> std::vector<std::string> {
+    if(!Utility::Directory::exists(_stagingAreaDirectory)) {
+        Utility::Directory::mkpath(_stagingAreaDirectory);
+    }
+
+    using Utility::Directory::Flag;
+    std::vector<std::string> file_list = Utility::Directory::list(_stagingAreaDirectory, Flag::SkipSpecial|Flag::SkipDirectories|Flag::SkipDotAndDotDot);
+
+    auto iter = std::remove_if(file_list.begin(), file_list.end(), [](std::string& file){
+        return !Utility::String::endsWith(file, ".sav");
+    });
+
+    file_list.erase(iter, file_list.end());
+
+    std::vector<std::string> mass_names;
+    mass_names.reserve(file_list.size());
+
+    for(const std::string& file : file_list) {
+        auto name = getMassName(Utility::Directory::join(_stagingAreaDirectory, file));
+
+        if(name) {
+            mass_names.push_back(Utility::formatString("{} ({})", *name, file));
+            _stagedMasses[file] = *name;
+        }
+    }
+
+    mass_names.shrink_to_fit();
+
+    return std::move(mass_names);
+}
+
+auto MassManager::updateStagedMass(const std::string& filename) -> int {
+    std::string file = Utility::Directory::join(_stagingAreaDirectory, filename);
+
+    if(!Utility::Directory::exists(file)) {
+        return -1;
+    }
+
+    auto name = getMassName(file);
+
+    if(!name) {
+        return -1;
+    }
+
+    _stagedMasses[filename] = *name;
+
+    int index = 0;
+
+    for(const auto& mass: _stagedMasses) {
+        if(mass.first != filename) {
+            ++index;
+            continue;
+        }
+
+        return index;
+    }
+
+    return -1;
+}
+
+auto MassManager::removeStagedMass(const std::string& filename) -> int {
+    int index = 0;
+
+    for(auto it = _stagedMasses.begin(); it != _stagedMasses.end(); ++it, ++index) {
+        if(it->first == filename) {
+            _stagedMasses.erase(it);
+            return index;
+        }
+    }
+
+    return -1;
+}
+
+std::string MassManager::stagedMassName(int index) {
+    int i = 0;
+    for(const auto& mass_info : _stagedMasses) {
+        if(i != index) {
+            ++i;
+            continue;
+        }
+
+        return mass_info.second;
+    }
+
+    return "";
+}
+
+auto MassManager::stagedMassName(const std::string& filename) -> std::string {
+    auto iter = _stagedMasses.find(filename);
+
+    if(iter == _stagedMasses.end()) {
+        return "";
+    }
+
+    return iter->second;
 }
 
 auto MassManager::findSaveDirectory() -> bool {
