@@ -34,6 +34,7 @@ class EvtMainFrame: public MainFrame {
 
     protected:
         void importEvent(wxCommandEvent&);
+        void exportEvent(wxCommandEvent&);
         void moveEvent(wxCommandEvent&);
         void deleteEvent(wxCommandEvent&);
         void backupEvent(wxCommandEvent&);

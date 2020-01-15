@@ -51,6 +51,13 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
     _watcher.Connect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
     _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.saveDirectory()), wxPATH_WIN),
                      wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, wxString::Format("*%s.sav", _manager.steamId()));
+    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory()), wxPATH_WIN),
+                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, wxString::Format("*.sav"));
+
+    std::vector<std::string> v = _manager.initialiseStagingArea();
+    for(const std::string& s : v) {
+        _stagingList->Append(s);
+    }
 
     _gameCheckTimer.Start(3000);
 }
@@ -73,30 +80,21 @@ void EvtMainFrame::importEvent(wxCommandEvent&) {
     long selected_hangar = _installedListView->GetFirstSelected();
     HangarState hangar_state = _manager.hangarState(selected_hangar);
 
-    if(hangar_state == HangarState::Filled &&
-       wxMessageBox(wxString::Format("Hangar %.2d is already occupied by the M.A.S.S. named \"%s\". Are you sure you want to import a M.A.S.S. to this hangar ?",
-                                     selected_hangar + 1, *(_manager.massName(selected_hangar))),
-                    "Question", wxYES_NO|wxCENTRE|wxICON_QUESTION, this) == wxNO) {
-        return;
+    int staged_selection = _stagingList->GetSelection();
+
+    int confirmation;
+
+    if(hangar_state == HangarState::Filled) {
+        confirmation = wxMessageBox(wxString::Format("Hangar %.2d is already occupied by the M.A.S.S. named \"%s\". Are you sure you want to import the M.A.S.S. named \"%s\" to this hangar ?",
+                                      selected_hangar + 1, *(_manager.massName(selected_hangar)), _manager.stagedMassName(staged_selection)),
+                                    "Question", wxYES_NO|wxCENTRE|wxICON_QUESTION, this);
+    }
+    else {
+        confirmation = wxMessageBox(wxString::Format("Are you sure you want to import the M.A.S.S. named \"%s\" to hangar %.2d ?", _manager.stagedMassName(staged_selection), selected_hangar + 1),
+                                    "Question", wxYES_NO|wxCENTRE|wxICON_QUESTION, this);
     }
 
-    wxFileDialog dialog(this, "Select a unit file", wxEmptyString, wxEmptyString, "M.A.S.S. Builder unit files (*.sav)|*.sav", wxFD_OPEN|wxFD_FILE_MUST_EXIST);
-
-    if(dialog.ShowModal() == wxID_CANCEL) {
-        return;
-    }
-
-    const std::string source_file = dialog.GetPath().ToUTF8().data();
-
-    Containers::Optional<std::string> mass_name = _manager.getMassName(source_file);
-
-    if(!mass_name) {
-        errorMessage(error_prefix + _manager.lastError());
-        return;
-    }
-
-    if(wxMessageBox(wxString::Format("Are you sure you want to import the M.A.S.S. named \"%s\" to hangar %.2d ?", *mass_name, selected_hangar + 1),
-                    "Question", wxYES_NO|wxCENTRE|wxICON_QUESTION, this) == wxNO) {
+    if(confirmation == wxNO) {
         return;
     }
 
@@ -105,13 +103,23 @@ void EvtMainFrame::importEvent(wxCommandEvent&) {
             errorMessage(error_prefix + "For security reasons, importing is disabled if the game's status is unknown.");
             break;
         case GameState::NotRunning:
-            if(!_manager.importMass(source_file, selected_hangar)) {
+            if(!_manager.importMass(staged_selection, selected_hangar)) {
                 errorMessage(error_prefix + _manager.lastError());
             }
             break;
         case GameState::Running:
             errorMessage(error_prefix + "Importing a M.A.S.S. is disabled while the game is running.");
             break;
+    }
+}
+
+void EvtMainFrame::exportEvent(wxCommandEvent&) {
+    const static std::string error_prefix = "Export failed:\n\n";
+
+    long slot = _installedListView->GetFirstSelected();
+
+    if(!_manager.exportMass(slot)) {
+        errorMessage(error_prefix + _manager.lastError());
     }
 }
 
@@ -214,28 +222,12 @@ void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
 
     wxMilliSleep(50);
 
-    wxRegEx regex;
+    if(event.GetPath().GetPath(wxPATH_GET_VOLUME, wxPATH_WIN) == Utility::Directory::toNativeSeparators(_manager.saveDirectory())) {
+        wxRegEx regex;
 
-    switch (event_type) {
-        case wxFSW_EVENT_CREATE:
-        case wxFSW_EVENT_DELETE:
-            regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav", _manager.steamId()), wxRE_ADVANCED);
-            if(regex.Matches(event_file)) {
-                long slot;
-
-                if(regex.GetMatch(event_file, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
-                    refreshHangar(slot);
-                }
-            }
-            break;
-        case wxFSW_EVENT_MODIFY:
-            if(_lastWatcherEventType == wxFSW_EVENT_RENAME) {
-                break;
-            }
-            if(event_file == _manager.profileSaveName()) {
-                getActiveSlot();
-            }
-            else {
+        switch (event_type) {
+            case wxFSW_EVENT_CREATE:
+            case wxFSW_EVENT_DELETE:
                 regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav", _manager.steamId()), wxRE_ADVANCED);
                 if(regex.Matches(event_file)) {
                     long slot;
@@ -244,28 +236,80 @@ void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
                         refreshHangar(slot);
                     }
                 }
-            }
-            break;
-        case wxFSW_EVENT_RENAME:
-            wxString new_name = event.GetNewPath().GetFullName();
-
-            long slot;
-            if(regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav\\.tmp", _manager.steamId()), wxRE_ADVANCED), regex.Matches(new_name)) {
-                if(regex.GetMatch(new_name, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
-                    refreshHangar(slot);
+                break;
+            case wxFSW_EVENT_MODIFY:
+                if(_lastWatcherEventType == wxFSW_EVENT_RENAME) {
+                    break;
                 }
-            }
-            else if(regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav", _manager.steamId()), wxRE_ADVANCED), regex.Matches(new_name)) {
-                if(regex.GetMatch(new_name, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
-                    refreshHangar(slot);
+                if(event_file == _manager.profileSaveName()) {
+                    getActiveSlot();
+                }
+                else {
+                    regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav", _manager.steamId()), wxRE_ADVANCED);
                     if(regex.Matches(event_file)) {
+                        long slot;
+
                         if(regex.GetMatch(event_file, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
                             refreshHangar(slot);
                         }
                     }
                 }
-            }
-            break;
+                break;
+            case wxFSW_EVENT_RENAME:
+                wxString new_name = event.GetNewPath().GetFullName();
+
+                long slot;
+                if(regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav\\.tmp", _manager.steamId()), wxRE_ADVANCED), regex.Matches(new_name)) {
+                    if(regex.GetMatch(new_name, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
+                        refreshHangar(slot);
+                    }
+                }
+                else if(regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav", _manager.steamId()), wxRE_ADVANCED), regex.Matches(new_name)) {
+                    if(regex.GetMatch(new_name, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
+                        refreshHangar(slot);
+                        if(regex.Matches(event_file)) {
+                            if(regex.GetMatch(event_file, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
+                                refreshHangar(slot);
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+    }
+    else if(event.GetPath().GetPath(wxPATH_GET_VOLUME, wxPATH_WIN) == Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory())) {
+        int index;
+
+        switch(event_type) {
+            case wxFSW_EVENT_CREATE:
+                index = _manager.updateStagedMass(event_file.ToUTF8().data());
+                if(index != -1) {
+                    _stagingList->Insert(wxString::Format("%s (%s)", _manager.stagedMassName(index), event_file), index);
+                }
+                break;
+            case wxFSW_EVENT_DELETE:
+                index = _manager.removeStagedMass(event_file.ToUTF8().data());
+                if(index != -1) {
+                    _stagingList->Delete(index);
+                }
+                break;
+            case wxFSW_EVENT_MODIFY:
+                index = _manager.updateStagedMass(event_file.ToUTF8().data());
+                if(index != -1) {
+                    _stagingList->SetString(index, wxString::Format("%s (%s)", _manager.stagedMassName(index), event_file));
+                }
+                break;
+            case wxFSW_EVENT_RENAME:
+                index = _manager.removeStagedMass(event_file.ToUTF8().data());
+                if(index != -1) {
+                    _stagingList->Delete(index);
+                }
+                index = _manager.updateStagedMass(event.GetNewPath().GetFullName().ToUTF8().data());
+                if(index != -1) {
+                    _stagingList->Insert(wxString::Format("%s (%s)", _manager.stagedMassName(index), event.GetNewPath().GetFullName()), index);
+                }
+                break;
+        }
     }
 
     _lastWatcherEventType = event_type;
