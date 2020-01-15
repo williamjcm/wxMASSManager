@@ -191,6 +191,10 @@ void EvtMainFrame::openSaveDirEvent(wxCommandEvent&) {
     wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_manager.saveDirectory()));
 }
 
+void EvtMainFrame::stagingButtonEvent(wxCommandEvent&) {
+    wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory()));
+}
+
 void EvtMainFrame::installedSelectionEvent(wxListEvent&) {
     updateCommandsState();
 }
