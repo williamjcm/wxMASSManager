@@ -23,6 +23,7 @@
 #include <wx/statbox.h>
 #include <wx/listbox.h>
 #include <wx/stattext.h>
+#include <wx/hyperlink.h>
 #include <wx/timer.h>
 #include <wx/frame.h>
 
@@ -51,6 +52,7 @@ class MainFrame : public wxFrame
 		wxStaticText* _gameStatusLabel;
 		wxStaticText* _gameStatus;
 		wxStaticText* _aboutText;
+		wxHyperlinkCtrl* _githubLink;
 		wxTimer _gameCheckTimer;
 
 		// Virtual event handlers, overide them in your derived class

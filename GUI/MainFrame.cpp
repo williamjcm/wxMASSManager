@@ -114,9 +114,12 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	bSizerMain->Add( bSizerGameStatus, 0, wxALIGN_CENTER_HORIZONTAL, 5 );
 
-	_aboutText = new wxStaticText( this, wxID_ANY, wxT("This version of the application was tested on M.A.S.S. Builder early access version 0.2.4.\nIt may or may not work with other versions of the game.\nMade for the M.A.S.S. Builder community by Guillaume Jacquemin.\nhttps://github.com/williamjcm/wxMASSManager"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL );
+	_aboutText = new wxStaticText( this, wxID_ANY, wxT("This version of the application was tested on M.A.S.S. Builder early access version 0.2.4.\nIt may or may not work with other versions of the game.\nMade for the M.A.S.S. Builder community by Guillaume Jacquemin."), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL );
 	_aboutText->Wrap( -1 );
 	bSizerMain->Add( _aboutText, 0, wxEXPAND|wxRIGHT|wxLEFT|wxALIGN_CENTER_HORIZONTAL, 5 );
+
+	_githubLink = new wxHyperlinkCtrl( this, wxID_ANY, wxT("https://github.com/williamjcm/wxMASSManager"), wxT("https://github.com/williamjcm/wxMASSManager"), wxDefaultPosition, wxDefaultSize, wxHL_DEFAULT_STYLE );
+	bSizerMain->Add( _githubLink, 0, wxALIGN_CENTER_HORIZONTAL|wxBOTTOM|wxRIGHT|wxLEFT, 5 );
 
 
 	this->SetSizer( bSizerMain );
