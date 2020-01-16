@@ -130,6 +130,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_openSaveDirButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
 	_importButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::importEvent ), NULL, this );
 	_exportButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::exportEvent ), NULL, this );
+	_stagingList->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( MainFrame::stagingSelectionEvent ), NULL, this );
 	_stagingAreaButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::stagingButtonEvent ), NULL, this );
 	this->Connect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( MainFrame::gameCheckTimerEvent ) );
 }
@@ -143,6 +144,7 @@ MainFrame::~MainFrame()
 	_openSaveDirButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
 	_importButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::importEvent ), NULL, this );
 	_exportButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::exportEvent ), NULL, this );
+	_stagingList->Disconnect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( MainFrame::stagingSelectionEvent ), NULL, this );
 	_stagingAreaButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::stagingButtonEvent ), NULL, this );
 	this->Disconnect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( MainFrame::gameCheckTimerEvent ) );
 
