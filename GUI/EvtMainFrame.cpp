@@ -399,6 +399,7 @@ void EvtMainFrame::updateCommandsState() {
     _exportButton->Enable(selection != -1);
     _moveButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty && hangar_state != HangarState::Invalid);
     _deleteButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty);
+    _deleteStagedButton->Enable(staged_selection != -1);
 }
 
 void EvtMainFrame::refreshHangar(int slot) {
