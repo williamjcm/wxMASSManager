@@ -40,6 +40,7 @@ class EvtMainFrame: public MainFrame {
         void backupEvent(wxCommandEvent&);
         void openSaveDirEvent(wxCommandEvent&);
         void stagingSelectionEvent(wxCommandEvent&);
+        void deleteStagedEvent(wxCommandEvent&);
         void stagingButtonEvent(wxCommandEvent&);
         void installedSelectionEvent(wxListEvent&);
         void listColumnDragEvent(wxListEvent&);

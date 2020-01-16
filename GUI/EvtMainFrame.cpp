@@ -203,6 +203,14 @@ void EvtMainFrame::stagingSelectionEvent(wxCommandEvent&) {
     updateCommandsState();
 }
 
+void EvtMainFrame::deleteStagedEvent(wxCommandEvent&) {
+    int selection = _stagingList->GetSelection();
+
+    if(selection != wxNOT_FOUND) {
+        _manager.deleteStagedMass(selection);
+    }
+}
+
 void EvtMainFrame::stagingButtonEvent(wxCommandEvent&) {
     wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory()));
 }
