@@ -109,14 +109,14 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_gameStatus->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	_gameStatus->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_CAPTIONTEXT ) );
 
-	bSizerGameStatus->Add( _gameStatus, 0, wxALL, 5 );
+	bSizerGameStatus->Add( _gameStatus, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
 
 
 	bSizerMain->Add( bSizerGameStatus, 0, wxALIGN_CENTER_HORIZONTAL, 5 );
 
 	_aboutText = new wxStaticText( this, wxID_ANY, wxT("This version of the application was tested on M.A.S.S. Builder early access version 0.2.4.\nIt may or may not work with other versions of the game.\nMade for the M.A.S.S. Builder community by Guillaume Jacquemin.\nhttps://github.com/williamjcm/wxMASSManager"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL );
 	_aboutText->Wrap( -1 );
-	bSizerMain->Add( _aboutText, 0, wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT, 5 );
+	bSizerMain->Add( _aboutText, 0, wxEXPAND|wxRIGHT|wxLEFT|wxALIGN_CENTER_HORIZONTAL, 5 );
 
 
 	this->SetSizer( bSizerMain );
