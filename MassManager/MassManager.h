@@ -74,6 +74,8 @@ class MassManager {
         auto updateStagedMass(const std::string& filename) -> int;
         auto removeStagedMass(const std::string& filename) -> int;
 
+        void deleteStagedMass(int index);
+
         auto stagedMassName(int index) -> std::string;
         auto stagedMassName(const std::string& filename) -> std::string;
 

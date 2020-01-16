@@ -471,6 +471,16 @@ auto MassManager::removeStagedMass(const std::string& filename) -> int {
     return -1;
 }
 
+void MassManager::deleteStagedMass(int index) {
+    int i = 0;
+    for(auto it = _stagedMasses.begin(); it != _stagedMasses.end(); ++it, ++i) {
+        if(i == index) {
+            Utility::Directory::rm(Utility::Directory::join(_stagingAreaDirectory, it->first));
+            break;
+        }
+    }
+}
+
 std::string MassManager::stagedMassName(int index) {
     int i = 0;
     for(const auto& mass_info : _stagedMasses) {

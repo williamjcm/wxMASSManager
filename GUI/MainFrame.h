@@ -45,6 +45,7 @@ class MainFrame : public wxFrame
 		wxButton* _importButton;
 		wxButton* _exportButton;
 		wxListBox* _stagingList;
+		wxButton* _deleteStagedButton;
 		wxButton* _stagingAreaButton;
 		wxStaticText* _riskLabel;
 		wxStaticText* _gameStatusLabel;
@@ -60,6 +61,7 @@ class MainFrame : public wxFrame
 		virtual void importEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void exportEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void stagingSelectionEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void deleteStagedEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void stagingButtonEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void gameCheckTimerEvent( wxTimerEvent& event ) { event.Skip(); }
 
