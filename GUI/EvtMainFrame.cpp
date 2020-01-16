@@ -199,6 +199,10 @@ void EvtMainFrame::openSaveDirEvent(wxCommandEvent&) {
     wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_manager.saveDirectory()));
 }
 
+void EvtMainFrame::stagingSelectionEvent(wxCommandEvent&) {
+    updateCommandsState();
+}
+
 void EvtMainFrame::stagingButtonEvent(wxCommandEvent&) {
     wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory()));
 }
@@ -379,10 +383,11 @@ void EvtMainFrame::getActiveSlot() {
 
 void EvtMainFrame::updateCommandsState() {
     long selection = _installedListView->GetFirstSelected();
+    int staged_selection = _stagingList->GetSelection();
     GameState game_state = _manager.gameState();
     HangarState hangar_state = _manager.hangarState(selection);
 
-    _importButton->Enable(selection != -1 && game_state != GameState::Running);
+    _importButton->Enable(selection != -1 && staged_selection != -1 && game_state != GameState::Running);
     _exportButton->Enable(selection != -1);
     _moveButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty && hangar_state != HangarState::Invalid);
     _deleteButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty);

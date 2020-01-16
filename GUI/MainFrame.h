@@ -59,6 +59,7 @@ class MainFrame : public wxFrame
 		virtual void openSaveDirEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void importEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void exportEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void stagingSelectionEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void stagingButtonEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void gameCheckTimerEvent( wxTimerEvent& event ) { event.Skip(); }
 
