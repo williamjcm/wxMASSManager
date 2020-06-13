@@ -41,6 +41,11 @@ add_executable(wxMASSManager WIN32
     GUI/MainFrame.cpp
     GUI/EvtMainFrame.h
     GUI/EvtMainFrame.cpp
+    GUI/NameChangeDialog.fbp
+    GUI/NameChangeDialog.h
+    GUI/NameChangeDialog.cpp
+    GUI/EvtNameChangeDialog.h
+    GUI/EvtNameChangeDialog.cpp
     MassManager/MassManager.h
     MassManager/MassManager.cpp
     resource.rc)
