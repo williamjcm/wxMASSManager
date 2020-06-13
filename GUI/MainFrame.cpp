@@ -37,6 +37,9 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_deleteButton = new wxButton( sbSizerButtons->GetStaticBox(), wxID_ANY, wxT("Delete"), wxDefaultPosition, wxDefaultSize, 0 );
 	sbSizerButtons->Add( _deleteButton, 1, wxALL|wxEXPAND, 5 );
 
+	_renameButton = new wxButton( sbSizerButtons->GetStaticBox(), wxID_ANY, wxT("Rename"), wxDefaultPosition, wxDefaultSize, 0 );
+	sbSizerButtons->Add( _renameButton, 1, wxALL|wxEXPAND, 5 );
+
 
 	sbSizerInstalled->Add( sbSizerButtons, 0, wxEXPAND, 5 );
 
@@ -132,6 +135,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	// Connect Events
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveEvent ), NULL, this );
 	_deleteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteEvent ), NULL, this );
+	_renameButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );
 	_zipButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupEvent ), NULL, this );
 	_openSaveDirButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
 	_importButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::importEvent ), NULL, this );
@@ -147,6 +151,7 @@ MainFrame::~MainFrame()
 	// Disconnect Events
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveEvent ), NULL, this );
 	_deleteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteEvent ), NULL, this );
+	_renameButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );
 	_zipButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupEvent ), NULL, this );
 	_openSaveDirButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
 	_importButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::importEvent ), NULL, this );

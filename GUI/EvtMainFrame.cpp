@@ -22,6 +22,8 @@
 #include <Corrade/Containers/Optional.h>
 #include <Corrade/Utility/Directory.h>
 
+#include "EvtNameChangeDialog.h"
+
 #include "EvtMainFrame.h"
 
 using namespace Corrade;
@@ -174,6 +176,30 @@ void EvtMainFrame::deleteEvent(wxCommandEvent&) {
         case GameState::Running:
             errorMessage(error_prefix + "Deleting a M.A.S.S. is disabled while the game is running.");
             break;
+    }
+}
+
+void EvtMainFrame::renameMassEvent(wxCommandEvent&) {
+    const static std::string error_prefix = "Rename failed:\n\n";
+
+    EvtNameChangeDialog dialog{this};
+    dialog.setName(*(_manager.massName(_installedListView->GetFirstSelected())));
+    int result = dialog.ShowModal();
+
+    if(result == wxID_OK) {
+        switch(_manager.gameState()) {
+            case GameState::Unknown:
+                errorMessage(error_prefix + "For security reasons, renaming a M.A.S.S. is disabled if the game's status is unknown.");
+                break;
+            case GameState::NotRunning:
+                if(!_manager.renameMass(_installedListView->GetFirstSelected(), dialog.getName())) {
+                    errorMessage(error_prefix + _manager.lastError());
+                }
+                break;
+            case GameState::Running:
+                errorMessage(error_prefix + "Renaming a M.A.S.S. is disabled while the game is running.");
+                break;
+        }
     }
 }
 
@@ -399,6 +425,7 @@ void EvtMainFrame::updateCommandsState() {
     _exportButton->Enable(selection != -1);
     _moveButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty && hangar_state != HangarState::Invalid);
     _deleteButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty);
+    _renameButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty);
     _deleteStagedButton->Enable(staged_selection != -1);
 }
 

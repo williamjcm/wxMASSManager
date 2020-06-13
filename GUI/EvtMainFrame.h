@@ -37,6 +37,7 @@ class EvtMainFrame: public MainFrame {
         void exportEvent(wxCommandEvent&);
         void moveEvent(wxCommandEvent&);
         void deleteEvent(wxCommandEvent&);
+        void renameMassEvent(wxCommandEvent&);
         void backupEvent(wxCommandEvent&);
         void openSaveDirEvent(wxCommandEvent&);
         void stagingSelectionEvent(wxCommandEvent&);

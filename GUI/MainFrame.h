@@ -41,6 +41,7 @@ class MainFrame : public wxFrame
 		wxListView* _installedListView;
 		wxButton* _moveButton;
 		wxButton* _deleteButton;
+		wxButton* _renameButton;
 		wxButton* _zipButton;
 		wxButton* _openSaveDirButton;
 		wxButton* _importButton;
@@ -58,6 +59,7 @@ class MainFrame : public wxFrame
 		// Virtual event handlers, overide them in your derived class
 		virtual void moveEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void deleteEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void renameMassEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void backupEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void openSaveDirEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void importEvent( wxCommandEvent& event ) { event.Skip(); }
