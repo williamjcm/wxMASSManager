@@ -313,6 +313,46 @@ auto MassManager::deleteMass(int hangar) -> bool {
     return true;
 }
 
+auto MassManager::renameMass(int hangar, const std::string& new_name) -> bool{
+    if(hangar < 0 && hangar >= 32) {
+        _lastError = "Hangar number out of range in MassManager::renameMass()";
+        return false;
+    }
+
+    if(new_name.length() > 32) {
+        _lastError = "The new name is longer than 32 characters in MassManager::renameMass()";
+        return false;
+    }
+
+    char length_difference = static_cast<char>(massName(hangar)->length() - new_name.length());
+
+    std::string mass_data = Utility::Directory::readString(Utility::Directory::join(_saveDirectory, _hangars[hangar]._filename));
+
+    auto iter = std::search(mass_data.begin(), mass_data.end(), &mass_name_locator[0], &mass_name_locator[56]);
+
+    if(iter != mass_data.end()) {
+        *(iter - 45) = *(iter - 45) - length_difference;
+        *(iter + 57) = *(iter + 57) - length_difference;
+        *(iter + 66) = *(iter + 66) - length_difference;
+        while(*(iter + 70) != '\0') {
+            mass_data.erase(iter + 70);
+        }
+        mass_data.insert(iter + 70, new_name.cbegin(), new_name.cend());
+
+        if(!Utility::Directory::writeString(Utility::Directory::join(_saveDirectory, _hangars[hangar]._filename), mass_data)) {
+            _lastError = "The file" + _hangars[hangar]._filename + " couldn't be written to.";
+            return false;
+        }
+
+        return true;
+    }
+    else {
+        _lastError = "Couldn't find the M.A.S.S. name in " + _hangars[hangar]._filename;
+
+        return false;
+    }
+}
+
 auto MassManager::backupSaves(const std::string& filename) -> bool {
     if(filename.empty() || (filename.length() < 5 && !Utility::String::endsWith(filename, ".zip"))) {
         _lastError = "Invalid filename " + filename + " in MassManager::backupSaves()";

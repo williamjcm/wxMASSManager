@@ -61,6 +61,8 @@ class MassManager {
 
         auto deleteMass(int hangar) -> bool;
 
+        auto renameMass(int hangar, const std::string& new_name) -> bool;
+
         auto backupSaves(const std::string& filename) -> bool;
 
         void refreshHangar(int hangar);
