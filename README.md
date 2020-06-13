@@ -6,7 +6,7 @@ A manager for M.A.S.S. save files, to facilitate sharing of M.A.S.S.es between u
 
 Get the `wxMASSManager-<version>-win64.zip` file from the Releases page, and extract it somewhere. Then, open the `wxMASSManager` folder and launch `wxMASSManager.exe`.
 
-## Building on MSYS2
+## Building on MSYS2 - IGNORE IF YOU JUST WANT TO USE THE APP!
 
 1. Install the 64-bit (`x86_64`) version of [MSYS2](https://www.msys2.org/) in its default path (`C:\msys64`), and update it fully.
 2. Run `pacman -S git mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw64/mingw-w64-x86_64-wxWidgets`.
