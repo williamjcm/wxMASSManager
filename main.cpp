@@ -24,6 +24,8 @@ class MyApp: public wxApp {
             SetAppName("wxMASSManager");
             SetAppDisplayName("wxMASSManager");
 
+            wxImage::AddHandler(new wxPNGHandler);
+
             EvtMainFrame* main_frame = new EvtMainFrame(nullptr);
 
             if(!main_frame->ready()) {
