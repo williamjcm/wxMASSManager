@@ -22,10 +22,10 @@
 #include <wx/sizer.h>
 #include <wx/statbox.h>
 #include <wx/listbox.h>
-#include <wx/stattext.h>
-#include <wx/hyperlink.h>
 #include <wx/panel.h>
 #include <wx/simplebook.h>
+#include <wx/stattext.h>
+#include <wx/hyperlink.h>
 #include <wx/timer.h>
 #include <wx/frame.h>
 
@@ -40,6 +40,7 @@ class MainFrame : public wxFrame
 	private:
 
 	protected:
+		wxPanel* _mainPanel;
 		wxSimplebook* _managerBook;
 		wxPanel* _massPanel;
 		wxListView* _installedListView;
