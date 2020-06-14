@@ -23,7 +23,8 @@
 #include <wx/statbox.h>
 #include <wx/listbox.h>
 #include <wx/panel.h>
-#include <wx/simplebook.h>
+#include <wx/radiobut.h>
+#include <wx/notebook.h>
 #include <wx/stattext.h>
 #include <wx/hyperlink.h>
 #include <wx/timer.h>
@@ -41,7 +42,7 @@ class MainFrame : public wxFrame
 
 	protected:
 		wxPanel* _mainPanel;
-		wxSimplebook* _managerBook;
+		wxNotebook* _managerNotebook;
 		wxPanel* _massPanel;
 		wxListView* _installedListView;
 		wxButton* _moveButton;
@@ -54,6 +55,15 @@ class MainFrame : public wxFrame
 		wxListBox* _stagingList;
 		wxButton* _deleteStagedButton;
 		wxButton* _stagingAreaButton;
+		wxPanel* _screenshotsPanel;
+		wxListCtrl* _screenshotsList;
+		wxRadioButton* _nameRadio;
+		wxRadioButton* _creationDateRadio;
+		wxRadioButton* _ascendingRadio;
+		wxRadioButton* _descendingRadio;
+		wxButton* _viewScreenshotButton;
+		wxButton* _deleteScreenshotButton;
+		wxButton* _screenshotDirButton;
 		wxStaticText* _riskLabel;
 		wxStaticText* _gameStatusLabel;
 		wxStaticText* _gameStatus;
@@ -72,6 +82,13 @@ class MainFrame : public wxFrame
 		virtual void stagingSelectionEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void deleteStagedEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void stagingButtonEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void screenshotFilenameSortingEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void screenshotCreationDateSortingEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void screenshotAscendingSortingEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void screenshotDescendingSortingEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void viewScreenshotEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void deleteScreenshotEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void openScreenshotDirEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void gameCheckTimerEvent( wxTimerEvent& event ) { event.Skip(); }
 
 
