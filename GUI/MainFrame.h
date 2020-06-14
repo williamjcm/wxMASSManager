@@ -24,6 +24,8 @@
 #include <wx/listbox.h>
 #include <wx/stattext.h>
 #include <wx/hyperlink.h>
+#include <wx/panel.h>
+#include <wx/simplebook.h>
 #include <wx/timer.h>
 #include <wx/frame.h>
 
@@ -38,6 +40,8 @@ class MainFrame : public wxFrame
 	private:
 
 	protected:
+		wxSimplebook* _managerBook;
+		wxPanel* _massPanel;
 		wxListView* _installedListView;
 		wxButton* _moveButton;
 		wxButton* _deleteButton;

@@ -12,21 +12,25 @@
 MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxSize( -1,600 ), wxDefaultSize );
-	this->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_WINDOW ) );
 
 	wxBoxSizer* bSizerMain;
 	bSizerMain = new wxBoxSizer( wxVERTICAL );
+
+	_managerBook = new wxSimplebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
+	_massPanel = new wxPanel( _managerBook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizerPanel;
+	bSizerPanel = new wxBoxSizer( wxVERTICAL );
 
 	wxBoxSizer* bSizerMainUi;
 	bSizerMainUi = new wxBoxSizer( wxHORIZONTAL );
 
 	wxStaticBoxSizer* sbSizerInstalled;
-	sbSizerInstalled = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Installed M.A.S.S.es") ), wxVERTICAL );
+	sbSizerInstalled = new wxStaticBoxSizer( new wxStaticBox( _massPanel, wxID_ANY, wxT("Installed M.A.S.S.es") ), wxVERTICAL );
 
-	_installedListView = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_HRULES);
+	_installedListView = new wxListView(_massPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_HRULES);
 	_installedListView->AppendColumn("Hangar", wxLIST_FORMAT_LEFT);
 	_installedListView->AppendColumn("M.A.S.S. name", wxLIST_FORMAT_LEFT);
-	sbSizerInstalled->Add( _installedListView, 1, wxALL|wxEXPAND, 5 );
+	sbSizerInstalled->Add( _installedListView, 1, wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxTOP|wxBOTTOM|wxLEFT, 5 );
 
 	wxStaticBoxSizer* sbSizerButtons;
 	sbSizerButtons = new wxStaticBoxSizer( new wxStaticBox( sbSizerInstalled->GetStaticBox(), wxID_ANY, wxT("Hangar actions") ), wxHORIZONTAL );
@@ -61,12 +65,12 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	wxBoxSizer* bSizerImportExport;
 	bSizerImportExport = new wxBoxSizer( wxVERTICAL );
 
-	_importButton = new wxButton( this, wxID_ANY, wxT("Import"), wxDefaultPosition, wxDefaultSize, 0 );
+	_importButton = new wxButton( _massPanel, wxID_ANY, wxT("Import"), wxDefaultPosition, wxDefaultSize, 0 );
 
 	_importButton->SetBitmap( wxArtProvider::GetBitmap( wxART_GO_BACK, wxART_BUTTON ) );
 	bSizerImportExport->Add( _importButton, 1, wxALL|wxEXPAND, 5 );
 
-	_exportButton = new wxButton( this, wxID_ANY, wxT("Export"), wxDefaultPosition, wxDefaultSize, 0 );
+	_exportButton = new wxButton( _massPanel, wxID_ANY, wxT("Export"), wxDefaultPosition, wxDefaultSize, 0 );
 
 	_exportButton->SetBitmap( wxArtProvider::GetBitmap( wxART_GO_FORWARD, wxART_BUTTON ) );
 	_exportButton->SetBitmapPosition( wxRIGHT );
@@ -76,7 +80,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	bSizerMainUi->Add( bSizerImportExport, 0, wxALIGN_CENTER_VERTICAL, 5 );
 
 	wxStaticBoxSizer* sbSizerStagingArea;
-	sbSizerStagingArea = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Staging area") ), wxVERTICAL );
+	sbSizerStagingArea = new wxStaticBoxSizer( new wxStaticBox( _massPanel, wxID_ANY, wxT("Staging area") ), wxVERTICAL );
 
 	_stagingList = new wxListBox( sbSizerStagingArea->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_NEEDED_SB|wxLB_SINGLE );
 	sbSizerStagingArea->Add( _stagingList, 1, wxALL|wxEXPAND, 5 );
@@ -91,23 +95,23 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	bSizerMainUi->Add( sbSizerStagingArea, 1, wxEXPAND|wxALL, 5 );
 
 
-	bSizerMain->Add( bSizerMainUi, 1, wxEXPAND, 5 );
+	bSizerPanel->Add( bSizerMainUi, 1, wxEXPAND, 5 );
 
-	_riskLabel = new wxStaticText( this, wxID_ANY, wxT("USE THIS TOOL AT YOUR OWN RISK!"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL );
+	_riskLabel = new wxStaticText( _massPanel, wxID_ANY, wxT("USE THIS TOOL AT YOUR OWN RISK!"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL );
 	_riskLabel->Wrap( -1 );
 	_riskLabel->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	_riskLabel->SetForegroundColour( wxColour( 255, 0, 0 ) );
 
-	bSizerMain->Add( _riskLabel, 0, wxALIGN_CENTER_HORIZONTAL|wxTOP|wxRIGHT|wxLEFT, 5 );
+	bSizerPanel->Add( _riskLabel, 0, wxALIGN_CENTER_HORIZONTAL|wxTOP|wxRIGHT|wxLEFT, 5 );
 
 	wxBoxSizer* bSizerGameStatus;
 	bSizerGameStatus = new wxBoxSizer( wxHORIZONTAL );
 
-	_gameStatusLabel = new wxStaticText( this, wxID_ANY, wxT("Game status:"), wxDefaultPosition, wxDefaultSize, 0 );
+	_gameStatusLabel = new wxStaticText( _massPanel, wxID_ANY, wxT("Game status:"), wxDefaultPosition, wxDefaultSize, 0 );
 	_gameStatusLabel->Wrap( -1 );
 	bSizerGameStatus->Add( _gameStatusLabel, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxEXPAND|wxTOP|wxBOTTOM|wxLEFT, 5 );
 
-	_gameStatus = new wxStaticText( this, wxID_ANY, wxT("not running"), wxDefaultPosition, wxDefaultSize, 0 );
+	_gameStatus = new wxStaticText( _massPanel, wxID_ANY, wxT("not running"), wxDefaultPosition, wxDefaultSize, 0 );
 	_gameStatus->Wrap( -1 );
 	_gameStatus->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	_gameStatus->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_CAPTIONTEXT ) );
@@ -115,14 +119,22 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	bSizerGameStatus->Add( _gameStatus, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
 
 
-	bSizerMain->Add( bSizerGameStatus, 0, wxALIGN_CENTER_HORIZONTAL, 5 );
+	bSizerPanel->Add( bSizerGameStatus, 0, wxALIGN_CENTER_HORIZONTAL, 5 );
 
-	_aboutText = new wxStaticText( this, wxID_ANY, wxT("This version of the application was tested on M.A.S.S. Builder early access version 0.3.7.\nIt may or may not work with other versions of the game.\nMade for the M.A.S.S. Builder community by Guillaume Jacquemin."), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL );
+	_aboutText = new wxStaticText( _massPanel, wxID_ANY, wxT("This version of the application was tested on M.A.S.S. Builder early access version 0.3.7.\nIt may or may not work with other versions of the game.\nMade for the M.A.S.S. Builder community by Guillaume Jacquemin."), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL );
 	_aboutText->Wrap( -1 );
-	bSizerMain->Add( _aboutText, 0, wxEXPAND|wxRIGHT|wxLEFT|wxALIGN_CENTER_HORIZONTAL, 5 );
+	bSizerPanel->Add( _aboutText, 0, wxEXPAND|wxRIGHT|wxLEFT|wxALIGN_CENTER_HORIZONTAL, 5 );
 
-	_githubLink = new wxHyperlinkCtrl( this, wxID_ANY, wxT("https://github.com/williamjcm/wxMASSManager"), wxT("https://github.com/williamjcm/wxMASSManager"), wxDefaultPosition, wxDefaultSize, wxHL_DEFAULT_STYLE );
-	bSizerMain->Add( _githubLink, 0, wxALIGN_CENTER_HORIZONTAL|wxBOTTOM|wxRIGHT|wxLEFT, 5 );
+	_githubLink = new wxHyperlinkCtrl( _massPanel, wxID_ANY, wxT("https://github.com/williamjcm/wxMASSManager"), wxT("https://github.com/williamjcm/wxMASSManager"), wxDefaultPosition, wxDefaultSize, wxHL_DEFAULT_STYLE );
+	bSizerPanel->Add( _githubLink, 0, wxALIGN_CENTER_HORIZONTAL|wxBOTTOM|wxRIGHT|wxLEFT, 5 );
+
+
+	_massPanel->SetSizer( bSizerPanel );
+	_massPanel->Layout();
+	bSizerPanel->Fit( _massPanel );
+	_managerBook->AddPage( _massPanel, wxT("a page"), false );
+
+	bSizerMain->Add( _managerBook, 1, wxEXPAND, 5 );
 
 
 	this->SetSizer( bSizerMain );
