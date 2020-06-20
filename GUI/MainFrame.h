@@ -82,6 +82,8 @@ class MainFrame : public wxFrame
 		virtual void stagingSelectionEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void deleteStagedEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void stagingButtonEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void viewScreenshotEvent( wxListEvent& event ) { event.Skip(); }
+		virtual void screenshotListSelectionEvent( wxListEvent& event ) { event.Skip(); }
 		virtual void screenshotFilenameSortingEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void screenshotCreationDateSortingEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void screenshotAscendingSortingEvent( wxCommandEvent& event ) { event.Skip(); }
