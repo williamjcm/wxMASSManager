@@ -328,7 +328,7 @@ void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
         stagingFileEventHandler(event_type, event_file, event);
     }
     else if(event.GetPath().GetPath(wxPATH_GET_VOLUME, wxPATH_WIN) == Utility::Directory::toNativeSeparators(_manager.screenshotDirectory())) {
-        screenshotFileEventHandler(event_type, event_file, event);
+        screenshotFileEventHandler(event_type, event_file);
     }
 
     _lastWatcherEventType = event_type;
