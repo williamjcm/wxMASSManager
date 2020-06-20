@@ -20,6 +20,7 @@
 #include <string>
 
 #include <wx/fswatcher.h>
+#include <wx/imaglist.h>
 
 #include "../MassManager/MassManager.h"
 
@@ -33,6 +34,7 @@ class EvtMainFrame: public MainFrame {
         auto ready() -> bool;
 
     protected:
+        // M.A.S.S.-related events
         void importEvent(wxCommandEvent&);
         void exportEvent(wxCommandEvent&);
         void moveEvent(wxCommandEvent&);
@@ -45,16 +47,36 @@ class EvtMainFrame: public MainFrame {
         void stagingButtonEvent(wxCommandEvent&);
         void installedSelectionEvent(wxListEvent&);
         void listColumnDragEvent(wxListEvent&);
+
+        // Screenshot events
+        void screenshotListSelectionEvent(wxListEvent&);
+        void screenshotFilenameSortingEvent(wxCommandEvent&);
+        void screenshotCreationDateSortingEvent(wxCommandEvent&);
+        void screenshotAscendingSortingEvent(wxCommandEvent&);
+        void screenshotDescendingSortingEvent(wxCommandEvent&);
+        void viewScreenshotEvent(wxCommandEvent&);
+        void viewScreenshotEvent(wxListEvent&);
+        void deleteScreenshotEvent(wxCommandEvent&);
+        void openScreenshotDirEvent(wxCommandEvent&);
+
+        // General events
         void fileUpdateEvent(wxFileSystemWatcherEvent& event);
         void gameCheckTimerEvent(wxTimerEvent&);
 
     private:
+        void unitFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
+        void stagingFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
+        void screenshotFileEventHandler(int event_type, const wxString& event_file);
+
         void initialiseListView();
         void isGameRunning();
         void refreshListView();
         void getActiveSlot();
         void updateCommandsState();
         void refreshHangar(int slot);
+
+        void updateScreenshotList();
+        void viewScreenshot();
 
         void infoMessage(const wxString& message);
         void warningMessage(const wxString& message);
@@ -64,6 +86,8 @@ class EvtMainFrame: public MainFrame {
 
         wxFileSystemWatcher _watcher;
         int _lastWatcherEventType = 0;
+
+        wxImageList _screenshotThumbs{160, 160, true, 0};
 };
 
 #endif // __EvtMainFrame__
