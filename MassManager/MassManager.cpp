@@ -18,6 +18,7 @@
 
 #include <algorithm>
 
+#include <wx/filename.h>
 #include <wx/regex.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
@@ -40,15 +41,15 @@ constexpr unsigned char steamid_locator[] = { 'A', 'c', 'c', 'o', 'u', 'n', 't',
 constexpr unsigned char active_slot_locator[] = { 'A', 'c', 't', 'i', 'v', 'e', 'F', 'r', 'a', 'm', 'e', 'S', 'l', 'o', 't', '\0', 0x0C, '\0', '\0', '\0', 'I', 'n', 't', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
 
 MassManager::MassManager() {
-    _ready = findSaveDirectory() && findSteamId();
+    _ready = findSaveDirectory() && findSteamId() && findScreenshotDirectory();
 
     if(!_ready) {
         return;
     }
 
-    _executableLocation = Utility::Directory::path(Utility::Directory::executableLocation());
+    std::string executable_location = Utility::Directory::path(Utility::Directory::executableLocation());
 
-    _stagingAreaDirectory = Utility::Directory::join(_executableLocation, "staging");
+    _stagingAreaDirectory = Utility::Directory::join(executable_location, "staging");
 
     _profileSaveName = Utility::formatString("Profile{}.sav", _steamId);
 
@@ -57,7 +58,7 @@ MassManager::MassManager() {
         refreshHangar(i);
     }
 
-    initialiseStagingArea();
+    loadScreenshots();
 }
 
 auto MassManager::ready() -> bool {
@@ -74,6 +75,10 @@ auto MassManager::saveDirectory() -> std::string const& {
 
 auto MassManager::stagingAreaDirectory() -> std::string const& {
     return _stagingAreaDirectory;
+}
+
+auto MassManager::screenshotDirectory() -> std::string const& {
+    return _screenshotDirectory;
 }
 
 auto MassManager::steamId() -> std::string const& {
@@ -521,7 +526,7 @@ void MassManager::deleteStagedMass(int index) {
     }
 }
 
-std::string MassManager::stagedMassName(int index) {
+auto MassManager::stagedMassName(int index) -> std::string {
     int i = 0;
     for(const auto& mass_info : _stagedMasses) {
         if(i != index) {
@@ -543,6 +548,89 @@ auto MassManager::stagedMassName(const std::string& filename) -> std::string {
     }
 
     return iter->second;
+}
+
+void MassManager::loadScreenshots() {
+    using Utility::Directory::Flag;
+    std::vector<std::string> file_list = Utility::Directory::list(_screenshotDirectory, Flag::SkipSpecial|Flag::SkipDirectories|Flag::SkipDotAndDotDot);
+
+    auto iter = std::remove_if(file_list.begin(), file_list.end(), [](std::string& file){
+        return !Utility::String::endsWith(file, ".png");
+    });
+
+    file_list.erase(iter, file_list.end());
+
+    _screenshots.reserve(file_list.size());
+
+    for(const std::string& file : file_list) {
+        addScreenshot(file);
+    }
+}
+
+auto MassManager::screenshots() -> std::vector<Screenshot> const& {
+    return _screenshots;
+}
+
+void MassManager::sortScreenshots(SortType type) {
+    _sortType = type;
+    sortScreenshots();
+}
+
+void MassManager::sortScreenshots(SortOrder order) {
+    _sortOrder = order;
+    sortScreenshots();
+}
+
+void MassManager::sortScreenshots() {
+    auto predicate = [this](const Screenshot& item_1, const Screenshot& item_2)->bool{
+        switch(_sortType) {
+            case SortType::Filename:
+                return wxString::FromUTF8(item_1._filename.c_str()).CmpNoCase(wxString::FromUTF8(item_2._filename.c_str())) < 0;
+            case SortType::CreationDate:
+                return item_1._creationDate.IsEarlierThan(item_2._creationDate);
+        }
+
+        return true;
+    };
+
+    switch(_sortOrder) {
+        case SortOrder::Ascending:
+            std::stable_sort(_screenshots.begin(), _screenshots.end(), predicate);
+            break;
+        case SortOrder::Descending:
+            std::stable_sort(_screenshots.rbegin(), _screenshots.rend(), predicate);
+            break;
+    }
+}
+
+auto MassManager::updateScreenshot(const std::string& filename) -> int {
+    addScreenshot(filename);
+    sortScreenshots();
+    int index = 0;
+    for(const Screenshot& s : _screenshots) {
+        if(s._filename == filename) {
+            return index;
+        }
+    }
+
+    return -1;
+}
+
+void MassManager::removeScreenshot(int index) {
+    if(static_cast<size_t>(index + 1) > _screenshots.size()) {
+        return;
+    }
+
+    auto it = _screenshots.begin() + index;
+    _screenshots.erase(it);
+}
+
+void MassManager::deleteScreenshot(int index) {
+    if(static_cast<size_t>(index + 1) > _screenshots.size()) {
+        return;
+    }
+
+    Utility::Directory::rm(Utility::Directory::join(_screenshotDirectory, _screenshots[index]._filename));
 }
 
 auto MassManager::findSaveDirectory() -> bool {
@@ -580,4 +668,47 @@ auto MassManager::findSteamId() -> bool {
 
     _lastError = "Couldn't find the profile save.";
     return false;
+}
+
+auto MassManager::findScreenshotDirectory() -> bool {
+    wchar_t h[MAX_PATH];
+    if(!SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, h))) {
+        _lastError = "SHGetFolderPathW() failed in MassManager::findScreenshotDirectory()";
+        return false;
+    }
+
+    _screenshotDirectory = Utility::Directory::join(Utility::Directory::fromNativeSeparators(Utility::Unicode::narrow(h)), "MASS_Builder/Saved/Screenshots/WindowsNoEditor");
+
+    if(!Utility::Directory::exists(_screenshotDirectory)) {
+        _lastError = _screenshotDirectory + " wasn't found.";
+        return false;
+    }
+
+    return true;
+}
+
+void MassManager::addScreenshot(const std::string& filename) {
+    std::string screenshot_path = Utility::Directory::toNativeSeparators(Utility::Directory::join(_screenshotDirectory, filename));
+
+    wxFileName screenshot_meta(screenshot_path);
+    wxDateTime creation_date;
+    screenshot_meta.GetTimes(nullptr, nullptr, &creation_date);
+
+    wxImage thumb{screenshot_path, wxBITMAP_TYPE_PNG};
+
+    wxSize size = thumb.GetSize();
+    if(size.GetWidth() > size.GetHeight()) {
+        size.Set(160, (size.GetHeight() * 160) / size.GetWidth());
+    }
+    else if(size.GetHeight() > size.GetWidth()) {
+        size.Set((size.GetWidth() * 160) / size.GetHeight(), 160);
+    }
+    else {
+        size.Set(160, 160);
+    }
+
+    thumb.Rescale(size.GetWidth(), size.GetHeight(), wxIMAGE_QUALITY_HIGH)
+         .Resize(wxSize{160, 160}, wxPoint{(160 - size.GetWidth()) / 2, (160 - size.GetHeight()) / 2});
+
+    _screenshots.push_back(Screenshot{filename, creation_date, thumb});
 }
