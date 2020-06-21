@@ -392,7 +392,7 @@
                                                                         <property name="window_extra_style"></property>
                                                                         <property name="window_name"></property>
                                                                         <property name="window_style"></property>
-                                                                        <event name="OnButtonClick">moveEvent</event>
+                                                                        <event name="OnButtonClick">moveMassEvent</event>
                                                                     </object>
                                                                 </object>
                                                                 <object class="sizeritem" expanded="0">
@@ -465,7 +465,7 @@
                                                                         <property name="window_extra_style"></property>
                                                                         <property name="window_name"></property>
                                                                         <property name="window_style"></property>
-                                                                        <event name="OnButtonClick">deleteEvent</event>
+                                                                        <event name="OnButtonClick">deleteMassEvent</event>
                                                                     </object>
                                                                 </object>
                                                                 <object class="sizeritem" expanded="0">
@@ -622,7 +622,7 @@
                                                                         <property name="window_extra_style"></property>
                                                                         <property name="window_name"></property>
                                                                         <property name="window_style"></property>
-                                                                        <event name="OnButtonClick">backupEvent</event>
+                                                                        <event name="OnButtonClick">backupSavesEvent</event>
                                                                     </object>
                                                                 </object>
                                                                 <object class="sizeritem" expanded="0">
@@ -781,7 +781,7 @@
                                                                 <property name="window_extra_style"></property>
                                                                 <property name="window_name"></property>
                                                                 <property name="window_style"></property>
-                                                                <event name="OnButtonClick">importEvent</event>
+                                                                <event name="OnButtonClick">importMassEvent</event>
                                                             </object>
                                                         </object>
                                                         <object class="sizeritem" expanded="0">
@@ -854,7 +854,7 @@
                                                                 <property name="window_extra_style"></property>
                                                                 <property name="window_name"></property>
                                                                 <property name="window_style"></property>
-                                                                <event name="OnButtonClick">exportEvent</event>
+                                                                <event name="OnButtonClick">exportMassEvent</event>
                                                             </object>
                                                         </object>
                                                     </object>
@@ -1078,7 +1078,7 @@
                                                                 <property name="window_extra_style"></property>
                                                                 <property name="window_name"></property>
                                                                 <property name="window_style"></property>
-                                                                <event name="OnButtonClick">stagingButtonEvent</event>
+                                                                <event name="OnButtonClick">openStagingDirEvent</event>
                                                             </object>
                                                         </object>
                                                     </object>

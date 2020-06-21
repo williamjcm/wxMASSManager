@@ -72,16 +72,16 @@ class MainFrame : public wxFrame
 		wxTimer _gameCheckTimer;
 
 		// Virtual event handlers, overide them in your derived class
-		virtual void moveEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void deleteEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void moveMassEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void deleteMassEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void renameMassEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void backupEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void backupSavesEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void openSaveDirEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void importEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void exportEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void importMassEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void exportMassEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void stagingSelectionEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void deleteStagedEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void stagingButtonEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void openStagingDirEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void viewScreenshotEvent( wxListEvent& event ) { event.Skip(); }
 		virtual void screenshotListSelectionEvent( wxListEvent& event ) { event.Skip(); }
 		virtual void screenshotFilenameSortingEvent( wxCommandEvent& event ) { event.Skip(); }

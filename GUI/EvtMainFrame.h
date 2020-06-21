@@ -35,16 +35,16 @@ class EvtMainFrame: public MainFrame {
 
     protected:
         // M.A.S.S.-related events
-        void importEvent(wxCommandEvent&);
-        void exportEvent(wxCommandEvent&);
-        void moveEvent(wxCommandEvent&);
-        void deleteEvent(wxCommandEvent&);
+        void importMassEvent(wxCommandEvent&);
+        void exportMassEvent(wxCommandEvent&);
+        void moveMassEvent(wxCommandEvent&);
+        void deleteMassEvent(wxCommandEvent&);
         void renameMassEvent(wxCommandEvent&);
         void backupEvent(wxCommandEvent&);
         void openSaveDirEvent(wxCommandEvent&);
         void stagingSelectionEvent(wxCommandEvent&);
         void deleteStagedEvent(wxCommandEvent&);
-        void stagingButtonEvent(wxCommandEvent&);
+        void openStagingDirEvent(wxCommandEvent&);
         void installedSelectionEvent(wxListEvent&);
         void listColumnDragEvent(wxListEvent&);
 

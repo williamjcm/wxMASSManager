@@ -83,7 +83,7 @@ bool EvtMainFrame::ready() {
     return _manager.ready();
 }
 
-void EvtMainFrame::importEvent(wxCommandEvent&) {
+void EvtMainFrame::importMassEvent(wxCommandEvent&) {
     const static std::string error_prefix = "Importing failed:\n\n";
 
     long selected_hangar = _installedListView->GetFirstSelected();
@@ -122,7 +122,7 @@ void EvtMainFrame::importEvent(wxCommandEvent&) {
     }
 }
 
-void EvtMainFrame::exportEvent(wxCommandEvent&) {
+void EvtMainFrame::exportMassEvent(wxCommandEvent&) {
     const static std::string error_prefix = "Export failed:\n\n";
 
     long slot = _installedListView->GetFirstSelected();
@@ -132,7 +132,7 @@ void EvtMainFrame::exportEvent(wxCommandEvent&) {
     }
 }
 
-void EvtMainFrame::moveEvent(wxCommandEvent&) {
+void EvtMainFrame::moveMassEvent(wxCommandEvent&) {
     const static std::string error_prefix = "Move failed:\n\n";
 
     long source_slot = _installedListView->GetFirstSelected();
@@ -163,7 +163,7 @@ void EvtMainFrame::moveEvent(wxCommandEvent&) {
     }
 }
 
-void EvtMainFrame::deleteEvent(wxCommandEvent&) {
+void EvtMainFrame::deleteMassEvent(wxCommandEvent&) {
     const static std::string error_prefix = "Deletion failed:\n\n";
 
     if(wxMessageBox(wxString::Format("Are you sure you want to delete the data in hangar %.2d ? This operation cannot be undone.", _installedListView->GetFirstSelected() + 1),
@@ -249,7 +249,7 @@ void EvtMainFrame::deleteStagedEvent(wxCommandEvent&) {
     }
 }
 
-void EvtMainFrame::stagingButtonEvent(wxCommandEvent&) {
+void EvtMainFrame::openStagingDirEvent(wxCommandEvent&) {
     wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory()));
 }
 
