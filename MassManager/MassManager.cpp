@@ -40,6 +40,8 @@ constexpr unsigned char steamid_locator[] = { 'A', 'c', 'c', 'o', 'u', 'n', 't',
 
 constexpr unsigned char active_slot_locator[] = { 'A', 'c', 't', 'i', 'v', 'e', 'F', 'r', 'a', 'm', 'e', 'S', 'l', 'o', 't', '\0', 0x0C, '\0', '\0', '\0', 'I', 'n', 't', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
 
+constexpr unsigned char credits_locator[] = { 'C', 'r', 'e', 'd', 'i', 't', '\0', 0x0C, '\0', '\0', '\0', 'I', 'n', 't', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
+
 MassManager::MassManager() {
     _ready = findSaveDirectory() && findSteamId() && findScreenshotDirectory();
 
@@ -126,7 +128,7 @@ auto MassManager::getActiveSlot() -> char{
     auto iter = std::search(mmap.begin(), mmap.end(), &active_slot_locator[0], &active_slot_locator[31]);
 
     if(iter == mmap.end()) {
-        if(std::strncmp(&mmap[0x3F6], "Credit", 6) == 0) {
+        if(std::search(mmap.begin(), mmap.end(), &credits_locator[0], &credits_locator[22]) != mmap.end()) {
             _activeSlot = 0;
         }
         else {
