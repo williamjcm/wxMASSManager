@@ -142,7 +142,7 @@ void EvtMainFrame::moveMassEvent(wxCommandEvent&) {
                                                        "- If the destination already contains a M.A.S.S., the two will be swapped.\n"
                                                        "- If the destination contains invalid data, it will be cleared first.",
                                                        *(_manager.massName(source_slot))),
-                                      "Slot", "Choose a slot", source_slot + 1, 1, 32, this) - 1;
+                                      "Slot", "Choose a slot", source_slot + 1, 1, 32, this);
 
     if(choice == -1 || choice == source_slot) {
         return;
@@ -153,7 +153,7 @@ void EvtMainFrame::moveMassEvent(wxCommandEvent&) {
             errorMessage(error_prefix + "For security reasons, moving a M.A.S.S. is disabled if the game's status is unknown.");
             break;
         case GameState::NotRunning:
-            if(!_manager.moveMass(source_slot, choice)) {
+            if(!_manager.moveMass(source_slot, choice - 1)) {
                 errorMessage(error_prefix + _manager.lastError());
             }
             break;
