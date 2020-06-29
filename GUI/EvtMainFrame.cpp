@@ -56,8 +56,6 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
                      wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, wxString::Format("*%s.sav", _manager.steamId()));
     _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory()), wxPATH_WIN),
                      wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, "*.sav");
-    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.screenshotDirectory()), wxPATH_WIN),
-                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE, "*.png"); // Not monitoring wxFSW_EVENT_{MODIFY,RENAME}, because they're a massive pain to handle. Ugh.
 
     std::vector<std::string> v = _manager.initialiseStagingArea();
     for(const std::string& s : v) {
@@ -65,6 +63,15 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
     }
 
     _gameCheckTimer.Start(3000);
+
+    if(!_manager.findScreenshotDirectory()) {
+        warningMessage("Screenshot manager not ready:\n\n" + _manager.lastError());
+        _screenshotsPanel->Disable();
+        return;
+    }
+
+    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.screenshotDirectory()), wxPATH_WIN),
+                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE, "*.png"); // Not monitoring wxFSW_EVENT_{MODIFY,RENAME}, because they're a massive pain to handle. Ugh.
 
     _screenshotsList->SetImageList(&_screenshotThumbs, wxIMAGE_LIST_NORMAL);
 

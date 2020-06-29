@@ -43,7 +43,7 @@ constexpr unsigned char active_slot_locator[] = { 'A', 'c', 't', 'i', 'v', 'e', 
 constexpr unsigned char credits_locator[] = { 'C', 'r', 'e', 'd', 'i', 't', '\0', 0x0C, '\0', '\0', '\0', 'I', 'n', 't', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
 
 MassManager::MassManager() {
-    _ready = findSaveDirectory() && findSteamId() && findScreenshotDirectory();
+    _ready = findSaveDirectory() && findSteamId();
 
     if(!_ready) {
         return;
@@ -59,8 +59,6 @@ MassManager::MassManager() {
         _hangars[i]._filename = Utility::formatString("Unit{:.2d}{}.sav", i, _steamId);
         refreshHangar(i);
     }
-
-    loadScreenshots();
 }
 
 auto MassManager::ready() -> bool {

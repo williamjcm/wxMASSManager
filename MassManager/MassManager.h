@@ -94,6 +94,7 @@ class MassManager {
         auto stagedMassName(int index) -> std::string;
         auto stagedMassName(const std::string& filename) -> std::string;
 
+        auto findScreenshotDirectory() -> bool;
         void loadScreenshots();
         auto screenshots() -> std::vector<Screenshot> const&;
         void sortScreenshots(SortType type);
@@ -107,7 +108,6 @@ class MassManager {
         auto findSaveDirectory() -> bool;
         auto findSteamId() -> bool;
 
-        auto findScreenshotDirectory() -> bool;
         void addScreenshot(const std::string& filename);
 
         bool _ready = false;
