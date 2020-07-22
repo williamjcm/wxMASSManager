@@ -32,6 +32,11 @@ using namespace Corrade;
 EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
     SetIcon(wxIcon("MAINICON"));
 
+    warningMessage(wxString::FromUTF8("Before you start using this app, a few things you should know:\n\n"
+                                      "For this application to work properly, Steam Cloud syncing needs to be disabled for the game.\nTo disable it, right-click the game in your Steam library, click \"Properties\", go to the \"Updates\" tab, and uncheck \"Enable Steam Cloud synchronization for M.A.S.S. Builder\".\n\n"
+                                      "DISCLAIMER: The developer of this application cannot be held responsible for data loss or corruption. PLEASE USE AT YOUR OWN RISK!\n\n"
+                                      "Last but not least, this application is released under the terms of the GNU General Public Licence version 3. Please see the COPYING file for more details."));
+
     if(!_manager.ready()) {
         errorMessage("There was an issue initialising the manager:\n\n" + _manager.lastError());
         return;
@@ -45,11 +50,6 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
     _installedListView->Connect(wxEVT_LIST_ITEM_DESELECTED, wxListEventHandler(EvtMainFrame::installedSelectionEvent), nullptr, this);
     _installedListView->Connect(wxEVT_LIST_BEGIN_DRAG, wxListEventHandler(EvtMainFrame::listColumnDragEvent), nullptr, this);
     _installedListView->Connect(wxEVT_LIST_COL_BEGIN_DRAG, wxListEventHandler(EvtMainFrame::listColumnDragEvent), nullptr, this);
-
-    warningMessage(wxString::FromUTF8("Before you start using this app, a few things you should know:\n\n"
-                                      "For this application to work properly, Steam Cloud syncing needs to be disabled for the game.\nTo disable it, right-click the game in your Steam library, click \"Properties\", go to the \"Updates\" tab, and uncheck \"Enable Steam Cloud synchronization for M.A.S.S. Builder\".\n\n"
-                                      "DISCLAIMER: The developer of this application cannot be held responsible for data loss or corruption. PLEASE USE AT YOUR OWN RISK!\n\n"
-                                      "Last but not least, this application is released under the terms of the GNU General Public Licence version 3. Please see the COPYING file for more details."));
 
     _watcher.Connect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
     _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.saveDirectory()), wxPATH_WIN),
@@ -81,6 +81,8 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
         _screenshotsPanel->Disable();
         return;
     }
+
+    _manager.loadScreenshots();
 
     _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.screenshotDirectory()), wxPATH_WIN),
                      wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE, "*.png"); // Not monitoring wxFSW_EVENT_{MODIFY,RENAME}, because they're a massive pain to handle. Ugh.
