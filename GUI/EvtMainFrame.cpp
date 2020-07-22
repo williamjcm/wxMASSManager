@@ -54,13 +54,25 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
     _watcher.Connect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
     _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.saveDirectory()), wxPATH_WIN),
                      wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, wxString::Format("*%s.sav", _manager.steamId()));
-    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory()), wxPATH_WIN),
-                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, "*.sav");
+
+    if(_manager.hasDemoUnits()) {
+        int result = wxMessageBox("M.A.S.S.es from the demo version of the game were found.\n\n"
+                                  "Do you want to move them to the staging area ?\n"
+                                  "WARNING: M.A.S.S.es from the demo version will keep parts you haven't unlocked in the main game, so you might get an advantage if you haven't progressed to that point.",
+                                  "Question", wxCENTRE|wxYES_NO|wxICON_QUESTION, this);
+
+        if(result == wxYES) {
+            _manager.addDemoUnitsToStaging();
+        }
+    }
 
     std::vector<std::string> v = _manager.initialiseStagingArea();
     for(const std::string& s : v) {
         _stagingList->Append(s);
     }
+
+    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory()), wxPATH_WIN),
+                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, "*.sav");
 
     _gameCheckTimer.Start(3000);
 

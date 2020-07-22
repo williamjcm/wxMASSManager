@@ -58,6 +58,9 @@ class MassManager {
         auto ready() -> bool;
         auto lastError() -> std::string const&;
 
+        auto hasDemoUnits() -> bool;
+        void addDemoUnitsToStaging();
+
         auto saveDirectory() -> std::string const&;
         auto stagingAreaDirectory() -> std::string const&;
         auto screenshotDirectory() -> std::string const&;

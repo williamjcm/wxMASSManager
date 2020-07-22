@@ -69,6 +69,35 @@ auto MassManager::lastError() -> std::string const& {
     return _lastError;
 }
 
+auto MassManager::hasDemoUnits() -> bool {
+    using Utility::Directory::Flag;
+    std::vector<std::string> list = Utility::Directory::list(_saveDirectory, Flag::SkipSpecial|Flag::SkipDirectories|Flag::SkipDotAndDotDot);
+
+    for(const std::string& file : list) {
+        if(Utility::String::beginsWith(file, "DemoUnit") && Utility::String::endsWith(file, ".sav")) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void MassManager::addDemoUnitsToStaging() {
+    using Utility::Directory::Flag;
+    std::vector<std::string> list = Utility::Directory::list(_saveDirectory, Flag::SkipSpecial|Flag::SkipDirectories|Flag::SkipDotAndDotDot);
+
+    auto predicate = [](const std::string& name)->bool{
+        return !(Utility::String::endsWith(name, ".sav") && Utility::String::beginsWith(name, "DemoUnit"));
+    };
+
+    list.erase(std::remove_if(list.begin(), list.end(), predicate), list.end());
+
+    for(const std::string& file : list) {
+        Utility::Directory::move(Utility::Directory::join(_saveDirectory, file),
+                                 Utility::Directory::join(_stagingAreaDirectory, file));
+    }
+}
+
 auto MassManager::saveDirectory() -> std::string const& {
     return _saveDirectory;
 }
