@@ -231,7 +231,7 @@ void EvtMainFrame::renameMassEvent(wxCommandEvent&) {
     }
 }
 
-void EvtMainFrame::backupEvent(wxCommandEvent&) {
+void EvtMainFrame::backupSavesEvent(wxCommandEvent&) {
     const static std::string error_prefix = "Backup failed:\n\n";
 
     wxString current_timestamp = wxDateTime::Now().Format("%Y-%m-%d_%H-%M-%S");
