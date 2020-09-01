@@ -47,8 +47,16 @@ add_executable(wxMASSManager WIN32
     GUI/NameChangeDialog.cpp
     GUI/EvtNameChangeDialog.h
     GUI/EvtNameChangeDialog.cpp
+    MassBuilderManager/MassBuilderManager.h
+    MassBuilderManager/MassBuilderManager.cpp
     MassManager/MassManager.h
     MassManager/MassManager.cpp
+    Profile/Profile.h
+    Profile/Profile.cpp
+    ProfileManager/ProfileManager.h
+    ProfileManager/ProfileManager.cpp
+    ScreenshotManager/ScreenshotManager.h
+    ScreenshotManager/ScreenshotManager.cpp
     resource.rc)
 
 target_compile_options(wxMASSManager PRIVATE -D_FILE_OFFSET_BITS=64 -D__WXMSW__ -fpermissive)
