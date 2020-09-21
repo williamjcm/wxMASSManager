@@ -22,11 +22,15 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-set(BUILD_STATIC ON CACHE BOOL "" FORCE)
-set(WITH_INTERCONNECT OFF CACHE BOOL "" FORCE)
-set(WITH_PLUGINMANAGER OFF CACHE BOOL "" FORCE)
-set(WITH_TESTSUITE OFF CACHE BOOL "" FORCE)
-add_subdirectory(corrade)
+option(USE_CORRADE_SUBMODULE "Use Corrade from the Git submodule. If set to OFF, make sure you have Corrade 2020.06 or later installed to a path CMake can search in." ON)
+
+if(NOT USE_CORRADE_SUBMODULE)
+    set(BUILD_STATIC ON CACHE BOOL "" FORCE)
+    set(WITH_INTERCONNECT OFF CACHE BOOL "" FORCE)
+    set(WITH_PLUGINMANAGER OFF CACHE BOOL "" FORCE)
+    set(WITH_TESTSUITE OFF CACHE BOOL "" FORCE)
+    add_subdirectory(corrade EXCLUDE_FROM_ALL)
+endif()
 
 find_package(Corrade REQUIRED Containers Utility)
 

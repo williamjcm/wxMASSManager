@@ -14,6 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <Corrade/version.h>
+
+#if !(CORRADE_VERSION_YEAR * 100 + CORRADE_VERSION_MONTH >= 202006)
+    #error This application requires Corrade 2020.06 or later to build.
+#endif
+
 #include <algorithm>
 
 #include <Corrade/Utility/Directory.h>
