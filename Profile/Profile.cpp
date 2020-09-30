@@ -32,11 +32,9 @@
 
 #include "Profile.h"
 
-constexpr char company_name_locator[] = { 'C', 'o', 'm', 'p', 'a', 'n', 'y', 'N', 'a', 'm', 'e', '\0', 0x0C, '\0', '\0', '\0', 'S', 't', 'r', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
-
-constexpr char active_slot_locator[] = { 'A', 'c', 't', 'i', 'v', 'e', 'F', 'r', 'a', 'm', 'e', 'S', 'l', 'o', 't', '\0', 0x0C, '\0', '\0', '\0', 'I', 'n', 't', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
-
-constexpr char credits_locator[] = { 'C', 'r', 'e', 'd', 'i', 't', '\0', 0x0C, '\0', '\0', '\0', 'I', 'n', 't', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
+constexpr char company_name_locator[] = "CompanyName\0\x0c\0\0\0StrProperty";
+constexpr char active_slot_locator[] = "ActiveFrameSlot\0\x0c\0\0\0IntProperty";
+constexpr char credits_locator[] = "Credit\0\x0c\0\0\0IntProperty";
 
 using namespace Corrade;
 

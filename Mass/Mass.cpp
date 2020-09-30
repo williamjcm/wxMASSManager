@@ -31,9 +31,8 @@
 
 using namespace Corrade;
 
-constexpr unsigned char mass_name_locator[] = { 'N', 'a', 'm', 'e', '_', '4', '5', '_', 'A', '0', '3', '7', 'C', '5', 'D', '5', '4', 'E', '5', '3', '4', '5', '6', '4', '0', '7', 'B', 'D', 'F', '0', '9', '1', '3', '4', '4', '5', '2', '9', 'B', 'B', '\0', 0x0C, '\0', '\0', '\0', 'S', 't', 'r', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
-
-constexpr unsigned char steamid_locator[] = { 'A', 'c', 'c', 'o', 'u', 'n', 't', '\0', 0x0C, '\0', '\0', '\0', 'S', 't', 'r', 'P', 'r', 'o', 'p', 'e', 'r', 't', 'y', '\0' };
+constexpr char mass_name_locator[] = "Name_45_A037C5D54E53456407BDF091344529BB\0\x0c\0\0\0StrProperty";
+constexpr char steamid_locator[] = "Account\0\x0c\0\0\0StrProperty";
 
 std::string Mass::_lastError = "";
 
