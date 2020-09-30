@@ -46,7 +46,7 @@ void EvtNameChangeDialog::textEditEvent(wxCommandEvent&) {
         _lengthBitmap->SetBitmap(wxArtProvider::GetBitmap(wxART_CROSS_MARK, wxART_BUTTON));
     }
 
-    _nameLength->SetLabel(wxString::Format("%u", value.length()));
+    _nameLength->SetLabel(wxString::Format("%zu", value.length()));
 
     if(_nameInput->Validate() == true) {
         _charsBitmap->SetBitmap(wxArtProvider::GetBitmap(wxART_TICK_MARK, wxART_BUTTON));
