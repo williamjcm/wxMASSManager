@@ -24,7 +24,11 @@
 
 #include <Corrade/Containers/Array.h>
 #include <Corrade/Utility/Directory.h>
+#include <Corrade/Utility/FormatStl.h>
 #include <Corrade/Utility/String.h>
+
+#include <wx/wfstream.h>
+#include <wx/zipstrm.h>
 
 #include "Profile.h"
 
@@ -137,4 +141,37 @@ auto Profile::getCredits() -> std::int32_t {
     }
 
     return _credits;
+}
+
+auto Profile::backup(const std::string& filename) -> bool {
+    if(filename.empty() || (filename.length() < 5 && !Utility::String::endsWith(filename, ".zip"))) {
+        _lastError = "Invalid filename " + filename + " in Profile::backup()";
+        return false;
+    }
+
+    if(Utility::Directory::exists(filename)) {
+        if(!Utility::Directory::rm(filename)) {
+            _lastError = "Couldn't overwrite " + filename + " in Profile::backup()";
+        }
+    }
+
+    wxFFileOutputStream out{filename};
+    wxZipOutputStream zip{out};
+
+    {
+        zip.PutNextEntry(_filename);
+        wxFFileInputStream profile_stream{Utility::Directory::toNativeSeparators(Utility::Directory::join(_profileDirectory, _filename)), "rb"};
+        zip.Write(profile_stream);
+    }
+
+    for(int i = 0; i < 32; ++i) {
+        std::string unit_file = Utility::Directory::join(_profileDirectory, Utility::formatString("{}Unit{:.2d}{}.sav", _type == ProfileType::Demo ? "Demo" : "", i, _steamId));
+        if(Utility::Directory::exists(unit_file)) {
+            zip.PutNextEntry(Utility::Directory::filename(unit_file));
+            wxFFileInputStream unit_stream{Utility::Directory::toNativeSeparators(unit_file)};
+            zip.Write(unit_stream);
+        }
+    }
+
+    return true;
 }

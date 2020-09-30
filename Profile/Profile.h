@@ -32,6 +32,8 @@ class Profile {
         auto credits() const -> std::int32_t;
         auto getCredits() -> std::int32_t;
 
+        auto backup(const std::string& filename) -> bool;
+
     private:
         std::string _profileDirectory;
         std::string _filename;
