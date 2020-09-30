@@ -19,12 +19,20 @@
 
 #include <string>
 
+#include <Corrade/Containers/Pointer.h>
+
 #include <wx/fswatcher.h>
 #include <wx/imaglist.h>
 
 #include "../MassManager/MassManager.h"
+#include "../MassBuilderManager/MassBuilderManager.h"
+#include "../Profile/Profile.h"
+#include "../ProfileManager/ProfileManager.h"
+#include "../ScreenshotManager/ScreenshotManager.h"
 
 #include "MainFrame.h"
+
+using namespace Corrade;
 
 class EvtMainFrame: public MainFrame {
     public:
@@ -34,13 +42,16 @@ class EvtMainFrame: public MainFrame {
         auto ready() -> bool;
 
     protected:
+        // Profile-related events
+        void profileSelectionEvent(wxCommandEvent&);
+        void backupSelectedProfileEvent(wxCommandEvent&);
+
         // M.A.S.S.-related events
         void importMassEvent(wxCommandEvent&);
         void exportMassEvent(wxCommandEvent&);
         void moveMassEvent(wxCommandEvent&);
         void deleteMassEvent(wxCommandEvent&);
         void renameMassEvent(wxCommandEvent&);
-        void backupSavesEvent(wxCommandEvent&);
         void openSaveDirEvent(wxCommandEvent&);
         void stagingSelectionEvent(wxCommandEvent&);
         void deleteStagedEvent(wxCommandEvent&);
@@ -48,7 +59,7 @@ class EvtMainFrame: public MainFrame {
         void installedSelectionEvent(wxListEvent&);
         void listColumnDragEvent(wxListEvent&);
 
-        // Screenshot events
+        // Screenshot-related events
         void screenshotListSelectionEvent(wxListEvent&);
         void screenshotFilenameSortingEvent(wxCommandEvent&);
         void screenshotCreationDateSortingEvent(wxCommandEvent&);
@@ -60,6 +71,7 @@ class EvtMainFrame: public MainFrame {
         void openScreenshotDirEvent(wxCommandEvent&);
 
         // General events
+        void tabChangeEvent(wxNotebookEvent& event);
         void fileUpdateEvent(wxFileSystemWatcherEvent& event);
         void gameCheckTimerEvent(wxTimerEvent&);
 
@@ -67,6 +79,8 @@ class EvtMainFrame: public MainFrame {
         void unitFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
         void stagingFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
         void screenshotFileEventHandler(int event_type, const wxString& event_file);
+
+        void updateProfileStats();
 
         void initialiseListView();
         void isGameRunning();
@@ -82,7 +96,10 @@ class EvtMainFrame: public MainFrame {
         void warningMessage(const wxString& message);
         void errorMessage(const wxString& message);
 
-        MassManager _manager;
+        MassBuilderManager _mbManager;
+        ProfileManager _profileManager;
+        Containers::Pointer<MassManager> _massManager;
+        Containers::Pointer<ScreenshotManager> _screenshotManager;
 
         wxFileSystemWatcher _watcher;
         int _lastWatcherEventType = 0;

@@ -14,6 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <Corrade/version.h>
+
+#if !(CORRADE_VERSION_YEAR * 100 + CORRADE_VERSION_MONTH >= 202006)
+    #error This application requires Corrade 2020.06 or later to build.
+#endif
+
+#include <wx/busyinfo.h>
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
 #include <wx/numdlg.h>
@@ -21,26 +28,49 @@
 #include <wx/scrolwin.h>
 
 #include <Corrade/Containers/Optional.h>
+#include <Corrade/Utility/DebugStl.h>
 #include <Corrade/Utility/Directory.h>
+#include <Corrade/Utility/FormatStl.h>
 
 #include "EvtNameChangeDialog.h"
 
 #include "EvtMainFrame.h"
 
-using namespace Corrade;
-
-EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
+EvtMainFrame::EvtMainFrame(wxWindow* parent):
+    MainFrame(parent),
+    _profileManager{_mbManager.saveDirectory()}
+{
     SetIcon(wxIcon("MAINICON"));
 
-    warningMessage(wxString::FromUTF8("Before you start using this app, a few things you should know:\n\n"
-                                      "For this application to work properly, Steam Cloud syncing needs to be disabled for the game.\nTo disable it, right-click the game in your Steam library, click \"Properties\", go to the \"Updates\" tab, and uncheck \"Enable Steam Cloud synchronization for M.A.S.S. Builder\".\n\n"
-                                      "DISCLAIMER: The developer of this application (Guillaume Jacquemin) isn't associated with Vermillion Digital, and both parties cannot be held responsible for data loss or corruption this app might cause. PLEASE USE AT YOUR OWN RISK!\n\n"
-                                      "Last but not least, this application is released under the terms of the GNU General Public Licence version 3. Please see the COPYING file for more details."));
+    //warningMessage(wxString::FromUTF8("Before you start using this app, a few things you should know:\n\n"
+    //                                  "For this application to work properly, Steam Cloud syncing needs to be disabled for the game.\nTo disable it, right-click the game in your Steam library, click \"Properties\", go to the \"Updates\" tab, and uncheck \"Enable Steam Cloud synchronization for M.A.S.S. Builder\".\n\n"
+    //                                  "DISCLAIMER: The developer of this application (Guillaume Jacquemin) isn't associated with Vermillion Digital, and both parties cannot be held responsible for data loss or corruption this app might cause. PLEASE USE AT YOUR OWN RISK!\n\n"
+    //                                  "Last but not least, this application is released under the terms of the GNU General Public Licence version 3. Please see the COPYING file for more details."));
 
-    if(!_manager.ready()) {
-        errorMessage("There was an issue initialising the manager:\n\n" + _manager.lastError());
+    if(!_mbManager.ready()) {
+        errorMessage("There was an error initialising the manager:\n\n" + _mbManager.lastError());
         return;
     }
+
+    if(!_profileManager.ready()) {
+        errorMessage("There was an error initialising the manager:\n\n" + _profileManager.lastError());
+        return;
+    }
+
+    for(const Profile& p : _profileManager.profiles()) {
+        if(p.valid()) {
+            _profileChoice->Append(wxString::Format("%s%s", p.companyName(), p.type() == ProfileType::Demo ? " (Demo)" : ""));
+        }
+    }
+
+    _profileManager.setProfile(0);
+    _profileChoice->SetSelection(0);
+
+    _massManager.emplace(_profileManager.profileDirectory(),
+                         _profileManager.currentProfile()->steamId(),
+                         _profileManager.currentProfile()->type() == ProfileType::Demo);
+
+    updateProfileStats();
 
     initialiseListView();
 
@@ -52,75 +82,95 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent): MainFrame(parent) {
     _installedListView->Connect(wxEVT_LIST_COL_BEGIN_DRAG, wxListEventHandler(EvtMainFrame::listColumnDragEvent), nullptr, this);
 
     _watcher.Connect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
-    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.saveDirectory()), wxPATH_WIN),
-                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, wxString::Format("*%s.sav", _manager.steamId()));
+    _watcher.AddTree(wxFileName{Utility::Directory::toNativeSeparators(_massManager->saveDirectory()), wxPATH_WIN},
+                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME,
+                     wxString::Format("%s*%s.sav", _profileManager.currentProfile()->type() == ProfileType::Demo ? "Demo" : "", _profileManager.currentProfile()->steamId()));
 
-    if(_manager.hasDemoUnits()) {
-        int result = wxMessageBox("M.A.S.S.es from the demo version of the game were found.\n\n"
-                                  "Do you want to move them to the staging area ?\n"
-                                  "WARNING: M.A.S.S.es from the demo version will keep parts you haven't unlocked in the main game, so you might get an advantage if you haven't progressed to that point.",
-                                  "Question", wxCENTRE|wxYES_NO|wxICON_QUESTION, this);
-
-        if(result == wxYES) {
-            _manager.addDemoUnitsToStaging();
-        }
+    auto staged_masses = _massManager->stagedMasses();
+    for(const auto& s : staged_masses) {
+        _stagingList->Append(wxString::Format("%s (%s)", s.second, s.first));
     }
 
-    std::vector<std::string> v = _manager.initialiseStagingArea();
-    for(const std::string& s : v) {
-        _stagingList->Append(s);
-    }
-
-    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory()), wxPATH_WIN),
+    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_massManager->stagingAreaDirectory()), wxPATH_WIN),
                      wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, "*.sav");
 
-    _gameCheckTimer.Start(3000);
-
-    if(!_manager.findScreenshotDirectory()) {
-        warningMessage("Screenshot manager not ready:\n\n" + _manager.lastError());
-        _screenshotsPanel->Disable();
-        return;
-    }
-
-    _manager.loadScreenshots();
-
-    _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_manager.screenshotDirectory()), wxPATH_WIN),
-                     wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE, "*.png"); // Not monitoring wxFSW_EVENT_{MODIFY,RENAME}, because they're a massive pain to handle. Ugh.
+    _gameCheckTimer.Start(2000);
 
     _screenshotsList->SetImageList(&_screenshotThumbs, wxIMAGE_LIST_NORMAL);
-
-    updateScreenshotList();
 }
 
 EvtMainFrame::~EvtMainFrame() {
+    _watcher.RemoveAll();
+    _watcher.Disconnect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
+
     _installedListView->Disconnect(wxEVT_LIST_ITEM_SELECTED, wxListEventHandler(EvtMainFrame::installedSelectionEvent), nullptr, this);
     _installedListView->Disconnect(wxEVT_LIST_ITEM_DESELECTED, wxListEventHandler(EvtMainFrame::installedSelectionEvent), nullptr, this);
     _installedListView->Disconnect(wxEVT_LIST_BEGIN_DRAG, wxListEventHandler(EvtMainFrame::listColumnDragEvent), nullptr, this);
     _installedListView->Disconnect(wxEVT_LIST_COL_BEGIN_DRAG, wxListEventHandler(EvtMainFrame::listColumnDragEvent), nullptr, this);
-    _watcher.Disconnect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(EvtMainFrame::fileUpdateEvent), nullptr, this);
 }
 
 bool EvtMainFrame::ready() {
-    return _manager.ready();
+    return _mbManager.ready() && _profileManager.ready();
+}
+
+void EvtMainFrame::profileSelectionEvent(wxCommandEvent&) {
+    _watcher.Remove(wxFileName{Utility::Directory::toNativeSeparators(Utility::Directory::path(_massManager->saveDirectory())) + "\\", wxPATH_WIN});
+        // Yeah, I really need that `+ "\\"`, because wxWidgets is *that* stupid.
+    int selection = _profileChoice->GetSelection();
+    if(_profileManager.setProfile(selection)) {
+        _massManager.emplace(_profileManager.profileDirectory(),
+                             _profileManager.currentProfile()->steamId(),
+                             _profileManager.currentProfile()->type() == ProfileType::Demo);
+
+        _watcher.AddTree(wxFileName{Utility::Directory::toNativeSeparators(_massManager->saveDirectory()), wxPATH_WIN},
+                         wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME,
+                         wxString::Format("%s*%s.sav", _profileManager.currentProfile()->type() == ProfileType::Demo ? "Demo" : "", _profileManager.currentProfile()->steamId()));
+
+        updateProfileStats();
+        refreshListView();
+    }
+}
+
+void EvtMainFrame::backupSelectedProfileEvent(wxCommandEvent&) {
+    const static std::string error_prefix = "Backup failed:\n\n";
+
+    wxString current_timestamp = wxDateTime::Now().Format("%Y-%m-%d_%H-%M-%S");
+
+    wxFileDialog save_dialog{this, "Choose output location", _massManager->saveDirectory(),
+                             wxString::Format("backup_%s%s_%s_%s.zip",
+                                              _profileManager.currentProfile()->type() == ProfileType::Demo ? "demo_" : "",
+                                              _profileManager.currentProfile()->companyName(),
+                                              _profileManager.currentProfile()->steamId(),
+                                              current_timestamp),
+                             "Zip archive (*.zip)|*.zip",
+                             wxFD_SAVE|wxFD_OVERWRITE_PROMPT};
+
+    if(save_dialog.ShowModal() == wxID_CANCEL) {
+        return;
+    }
+
+    if(!_profileManager.currentProfile()->backup(save_dialog.GetPath().ToStdString())) {
+        errorMessage(error_prefix + _massManager->lastError());
+    }
 }
 
 void EvtMainFrame::importMassEvent(wxCommandEvent&) {
     const static std::string error_prefix = "Importing failed:\n\n";
 
     long selected_hangar = _installedListView->GetFirstSelected();
-    HangarState hangar_state = _manager.hangarState(selected_hangar);
+    MassState mass_state = _massManager->massState(selected_hangar);
 
     int staged_selection = _stagingList->GetSelection();
 
     int confirmation;
 
-    if(hangar_state == HangarState::Filled) {
+    if(mass_state == MassState::Valid) {
         confirmation = wxMessageBox(wxString::Format("Hangar %.2d is already occupied by the M.A.S.S. named \"%s\". Are you sure you want to import the M.A.S.S. named \"%s\" to this hangar ?",
-                                      selected_hangar + 1, *(_manager.massName(selected_hangar)), _manager.stagedMassName(staged_selection)),
+                                      selected_hangar + 1, _massManager->massName(selected_hangar), _massManager->stagedMassName(staged_selection)),
                                     "Question", wxYES_NO|wxCENTRE|wxICON_QUESTION, this);
     }
     else {
-        confirmation = wxMessageBox(wxString::Format("Are you sure you want to import the M.A.S.S. named \"%s\" to hangar %.2d ?", _manager.stagedMassName(staged_selection), selected_hangar + 1),
+        confirmation = wxMessageBox(wxString::Format("Are you sure you want to import the M.A.S.S. named \"%s\" to hangar %.2d ?", _massManager->stagedMassName(staged_selection), selected_hangar + 1),
                                     "Question", wxYES_NO|wxCENTRE|wxICON_QUESTION, this);
     }
 
@@ -128,13 +178,13 @@ void EvtMainFrame::importMassEvent(wxCommandEvent&) {
         return;
     }
 
-    switch(_manager.gameState()) {
+    switch(_mbManager.gameState()) {
         case GameState::Unknown:
             errorMessage(error_prefix + "For security reasons, importing is disabled if the game's status is unknown.");
             break;
         case GameState::NotRunning:
-            if(!_manager.importMass(staged_selection, selected_hangar)) {
-                errorMessage(error_prefix + _manager.lastError());
+            if(!_massManager->importMass(staged_selection, selected_hangar)) {
+                errorMessage(error_prefix + _massManager->lastError());
             }
             break;
         case GameState::Running:
@@ -148,8 +198,8 @@ void EvtMainFrame::exportMassEvent(wxCommandEvent&) {
 
     long slot = _installedListView->GetFirstSelected();
 
-    if(!_manager.exportMass(slot)) {
-        errorMessage(error_prefix + _manager.lastError());
+    if(!_massManager->exportMass(slot)) {
+        errorMessage(error_prefix + _massManager->lastError());
     }
 }
 
@@ -162,20 +212,20 @@ void EvtMainFrame::moveMassEvent(wxCommandEvent&) {
                                                        "- If the destination hangar is the same as the source, nothing will happen.\n"
                                                        "- If the destination already contains a M.A.S.S., the two will be swapped.\n"
                                                        "- If the destination contains invalid data, it will be cleared first.",
-                                                       *(_manager.massName(source_slot))),
+                                                       _massManager->massName(source_slot)),
                                       "Slot", "Choose a slot", source_slot + 1, 1, 32, this);
 
     if(choice == -1 || choice == source_slot) {
         return;
     }
 
-    switch(_manager.gameState()) {
+    switch(_mbManager.gameState()) {
         case GameState::Unknown:
             errorMessage(error_prefix + "For security reasons, moving a M.A.S.S. is disabled if the game's status is unknown.");
             break;
         case GameState::NotRunning:
-            if(!_manager.moveMass(source_slot, choice - 1)) {
-                errorMessage(error_prefix + _manager.lastError());
+            if(!_massManager->moveMass(source_slot, choice - 1)) {
+                errorMessage(error_prefix + _massManager->lastError());
             }
             break;
         case GameState::Running:
@@ -192,13 +242,13 @@ void EvtMainFrame::deleteMassEvent(wxCommandEvent&) {
         return;
     }
 
-    switch(_manager.gameState()) {
+    switch(_mbManager.gameState()) {
         case GameState::Unknown:
             errorMessage(error_prefix + "For security reasons, deleting a M.A.S.S. is disabled if the game's status is unknown.");
             break;
         case GameState::NotRunning:
-            if(!_manager.deleteMass(_installedListView->GetFirstSelected())) {
-                errorMessage(error_prefix + _manager.lastError());
+            if(!_massManager->deleteMass(_installedListView->GetFirstSelected())) {
+                errorMessage(error_prefix + _massManager->lastError());
             }
             break;
         case GameState::Running:
@@ -211,17 +261,17 @@ void EvtMainFrame::renameMassEvent(wxCommandEvent&) {
     const static std::string error_prefix = "Rename failed:\n\n";
 
     EvtNameChangeDialog dialog{this};
-    dialog.setName(*(_manager.massName(_installedListView->GetFirstSelected())));
+    dialog.setName(_massManager->massName(_installedListView->GetFirstSelected()));
     int result = dialog.ShowModal();
 
     if(result == wxID_OK) {
-        switch(_manager.gameState()) {
+        switch(_mbManager.gameState()) {
             case GameState::Unknown:
                 errorMessage(error_prefix + "For security reasons, renaming a M.A.S.S. is disabled if the game's status is unknown.");
                 break;
             case GameState::NotRunning:
-                if(!_manager.renameMass(_installedListView->GetFirstSelected(), dialog.getName())) {
-                    errorMessage(error_prefix + _manager.lastError());
+                if(!_massManager->renameMass(_installedListView->GetFirstSelected(), dialog.getName())) {
+                    errorMessage(error_prefix + _massManager->lastError());
                 }
                 break;
             case GameState::Running:
@@ -231,26 +281,8 @@ void EvtMainFrame::renameMassEvent(wxCommandEvent&) {
     }
 }
 
-void EvtMainFrame::backupSavesEvent(wxCommandEvent&) {
-    const static std::string error_prefix = "Backup failed:\n\n";
-
-    wxString current_timestamp = wxDateTime::Now().Format("%Y-%m-%d_%H-%M-%S");
-
-    wxFileDialog save_dialog{this, "Choose output location", _manager.saveDirectory(),
-                             wxString::Format("backup_%s_%s.zip", _manager.steamId(), current_timestamp), "Zip archive (*zip)|*zip",
-                             wxFD_SAVE|wxFD_OVERWRITE_PROMPT};
-
-    if(save_dialog.ShowModal() == wxID_CANCEL) {
-        return;
-    }
-
-    if(!_manager.backupSaves(save_dialog.GetPath().ToStdString())) {
-        errorMessage(error_prefix + _manager.lastError());
-    }
-}
-
 void EvtMainFrame::openSaveDirEvent(wxCommandEvent&) {
-    wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_manager.saveDirectory()));
+    wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_massManager->saveDirectory()));
 }
 
 void EvtMainFrame::stagingSelectionEvent(wxCommandEvent&) {
@@ -266,12 +298,12 @@ void EvtMainFrame::deleteStagedEvent(wxCommandEvent&) {
     int selection = _stagingList->GetSelection();
 
     if(selection != wxNOT_FOUND) {
-        _manager.deleteStagedMass(selection);
+        _massManager->deleteStagedMass(selection);
     }
 }
 
 void EvtMainFrame::openStagingDirEvent(wxCommandEvent&) {
-    wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory()));
+    wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_massManager->stagingAreaDirectory()));
 }
 
 void EvtMainFrame::installedSelectionEvent(wxListEvent&) {
@@ -287,22 +319,22 @@ void EvtMainFrame::screenshotListSelectionEvent(wxListEvent&) {
 }
 
 void EvtMainFrame::screenshotFilenameSortingEvent(wxCommandEvent&) {
-    _manager.sortScreenshots(SortType::Filename);
+    _screenshotManager->sortScreenshots(SortType::Filename);
     updateScreenshotList();
 }
 
 void EvtMainFrame::screenshotCreationDateSortingEvent(wxCommandEvent&) {
-    _manager.sortScreenshots(SortType::CreationDate);
+    _screenshotManager->sortScreenshots(SortType::CreationDate);
     updateScreenshotList();
 }
 
 void EvtMainFrame::screenshotAscendingSortingEvent(wxCommandEvent&) {
-    _manager.sortScreenshots(SortOrder::Ascending);
+    _screenshotManager->sortScreenshots(SortOrder::Ascending);
     updateScreenshotList();
 }
 
 void EvtMainFrame::screenshotDescendingSortingEvent(wxCommandEvent&) {
-    _manager.sortScreenshots(SortOrder::Descending);
+    _screenshotManager->sortScreenshots(SortOrder::Descending);
     updateScreenshotList();
 }
 
@@ -323,12 +355,22 @@ void EvtMainFrame::deleteScreenshotEvent(wxCommandEvent&) {
     long selection = _screenshotsList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 
     if(selection != -1) {
-        _manager.deleteScreenshot(selection);
+        _screenshotManager->deleteScreenshot(selection);
     }
 }
 
 void EvtMainFrame::openScreenshotDirEvent(wxCommandEvent&) {
-    wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_manager.screenshotDirectory()));
+    wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_screenshotManager->screenshotDirectory()));
+}
+
+void EvtMainFrame::tabChangeEvent(wxNotebookEvent& event) {
+    if(event.GetSelection() == 2 && !_screenshotManager) {
+        wxBusyInfo busy{"Loading screenshots...", this};
+        _screenshotManager.emplace(_mbManager.saveDirectory());
+        _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_screenshotManager->screenshotDirectory()), wxPATH_WIN),
+                         wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE, "*.png"); // Not monitoring MODIFY or RENAME, because they're a massive pain to handle. Ugh.
+        updateScreenshotList();
+    }
 }
 
 void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
@@ -342,13 +384,15 @@ void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
 
     wxMilliSleep(50);
 
-    if(event.GetPath().GetPath(wxPATH_GET_VOLUME, wxPATH_WIN) == Utility::Directory::toNativeSeparators(_manager.saveDirectory())) {
+    wxString event_path = event.GetPath().GetPath(wxPATH_GET_VOLUME, wxPATH_WIN);
+
+    if(event_path == Utility::Directory::toNativeSeparators(_massManager->saveDirectory())) {
         unitFileEventHandler(event_type, event_file, event);
     }
-    else if(event.GetPath().GetPath(wxPATH_GET_VOLUME, wxPATH_WIN) == Utility::Directory::toNativeSeparators(_manager.stagingAreaDirectory())) {
+    else if(event_path == Utility::Directory::toNativeSeparators(_massManager->stagingAreaDirectory())) {
         stagingFileEventHandler(event_type, event_file, event);
     }
-    else if(event.GetPath().GetPath(wxPATH_GET_VOLUME, wxPATH_WIN) == Utility::Directory::toNativeSeparators(_manager.screenshotDirectory())) {
+    else if(event_path == Utility::Directory::toNativeSeparators(_screenshotManager->screenshotDirectory())) {
         screenshotFileEventHandler(event_type, event_file);
     }
 
@@ -367,7 +411,7 @@ void EvtMainFrame::unitFileEventHandler(int event_type, const wxString& event_fi
     switch (event_type) {
         case wxFSW_EVENT_CREATE:
         case wxFSW_EVENT_DELETE:
-            regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav", _manager.steamId()), wxRE_ADVANCED);
+            regex.Compile(wxString::Format("%sUnit([0-3][0-9])%s\\.sav", _profileManager.currentProfile()->type() == ProfileType::Demo ? "Demo" : "", _profileManager.currentProfile()->steamId()), wxRE_ADVANCED);
             if(regex.Matches(event_file)) {
                 long slot;
 
@@ -380,11 +424,11 @@ void EvtMainFrame::unitFileEventHandler(int event_type, const wxString& event_fi
             if(_lastWatcherEventType == wxFSW_EVENT_RENAME) {
                 break;
             }
-            if(event_file == _manager.profileSaveName()) {
+            if(event_file == _profileManager.currentProfile()->filename()) {
                 getActiveSlot();
             }
             else {
-                regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav", _manager.steamId()), wxRE_ADVANCED);
+                regex.Compile(wxString::Format("%sUnit([0-3][0-9])%s\\.sav", _profileManager.currentProfile()->type() == ProfileType::Demo ? "Demo" : "", _profileManager.currentProfile()->steamId()), wxRE_ADVANCED);
                 if(regex.Matches(event_file)) {
                     long slot;
 
@@ -398,12 +442,12 @@ void EvtMainFrame::unitFileEventHandler(int event_type, const wxString& event_fi
             wxString new_name = event.GetNewPath().GetFullName();
 
             long slot;
-            if(regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav\\.tmp", _manager.steamId()), wxRE_ADVANCED), regex.Matches(new_name)) {
+            if(regex.Compile(wxString::Format("%sUnit([0-3][0-9])%s\\.sav\\.tmp", _profileManager.currentProfile()->type() == ProfileType::Demo ? "Demo" : "", _profileManager.currentProfile()->steamId()), wxRE_ADVANCED), regex.Matches(new_name)) {
                 if(regex.GetMatch(new_name, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
                     refreshHangar(slot);
                 }
             }
-            else if(regex.Compile(wxString::Format("Unit([0-3][0-9])%s\\.sav", _manager.steamId()), wxRE_ADVANCED), regex.Matches(new_name)) {
+            else if(regex.Compile(wxString::Format("%sUnit([0-3][0-9])%s\\.sav", _profileManager.currentProfile()->type() == ProfileType::Demo ? "Demo" : "", _profileManager.currentProfile()->steamId()), wxRE_ADVANCED), regex.Matches(new_name)) {
                 if(regex.GetMatch(new_name, 1).ToLong(&slot) && slot >= 0 && slot < 32) {
                     refreshHangar(slot);
                     if(regex.Matches(event_file)) {
@@ -422,31 +466,31 @@ void EvtMainFrame::stagingFileEventHandler(int event_type, const wxString& event
 
     switch(event_type) {
         case wxFSW_EVENT_CREATE:
-            index = _manager.updateStagedMass(event_file.ToUTF8().data());
+            index = _massManager->updateStagedMass(event_file.ToUTF8().data());
             if(index != -1) {
-                _stagingList->Insert(wxString::Format("%s (%s)", _manager.stagedMassName(index), event_file), index);
+                _stagingList->Insert(wxString::Format("%s (%s)", _massManager->stagedMassName(index), event_file), index);
             }
             break;
         case wxFSW_EVENT_DELETE:
-            index = _manager.removeStagedMass(event_file.ToUTF8().data());
+            index = _massManager->removeStagedMass(event_file.ToUTF8().data());
             if(index != -1) {
                 _stagingList->Delete(index);
             }
             break;
         case wxFSW_EVENT_MODIFY:
-            index = _manager.updateStagedMass(event_file.ToUTF8().data());
+            index = _massManager->updateStagedMass(event_file.ToUTF8().data());
             if(index != -1) {
-                _stagingList->SetString(index, wxString::Format("%s (%s)", _manager.stagedMassName(index), event_file));
+                _stagingList->SetString(index, wxString::Format("%s (%s)", _massManager->stagedMassName(index), event_file));
             }
             break;
         case wxFSW_EVENT_RENAME:
-            index = _manager.removeStagedMass(event_file.ToUTF8().data());
+            index = _massManager->removeStagedMass(event_file.ToUTF8().data());
             if(index != -1) {
                 _stagingList->Delete(index);
             }
-            index = _manager.updateStagedMass(event.GetNewPath().GetFullName().ToUTF8().data());
+            index = _massManager->updateStagedMass(event.GetNewPath().GetFullName().ToUTF8().data());
             if(index != -1) {
-                _stagingList->Insert(wxString::Format("%s (%s)", _manager.stagedMassName(index), event.GetNewPath().GetFullName()), index);
+                _stagingList->Insert(wxString::Format("%s (%s)", _massManager->stagedMassName(index), event.GetNewPath().GetFullName()), index);
             }
             break;
     }
@@ -457,17 +501,22 @@ void EvtMainFrame::screenshotFileEventHandler(int event_type, const wxString& ev
 
     switch(event_type) {
         case wxFSW_EVENT_CREATE:
-            _manager.updateScreenshot(event_file.ToUTF8().data());
+            _screenshotManager->updateScreenshot(event_file.ToUTF8().data());
             updateScreenshotList();
             break;
         case wxFSW_EVENT_DELETE:
             index = _screenshotsList->FindItem(-1, event_file, true);
             if(index != -1) {
-                _manager.removeScreenshot(index);
+                _screenshotManager->removeScreenshot(index);
                 _screenshotsList->DeleteItem(index);
             }
             break;
     }
+}
+
+void EvtMainFrame::updateProfileStats() {
+    _companyName->SetLabel(_profileManager.currentProfile()->companyName());
+    _credits->SetLabel(wxString::Format("%i", _profileManager.currentProfile()->getCredits()));
 }
 
 void EvtMainFrame::initialiseListView() {
@@ -483,7 +532,10 @@ void EvtMainFrame::initialiseListView() {
 }
 
 void EvtMainFrame::isGameRunning() {
-    GameState state = _manager.checkGameState();
+    _gameStatus->SetLabel("checking...");
+    _gameStatus->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_CAPTIONTEXT));
+
+    GameState state = _mbManager.checkGameState();
 
     switch(state) {
         case GameState::Unknown:
@@ -512,7 +564,7 @@ void EvtMainFrame::refreshListView() {
 }
 
 void EvtMainFrame::getActiveSlot() {
-    char slot = _manager.activeSlot();
+    auto slot = _profileManager.currentProfile()->activeFrameSlot();
 
     if(slot != -1) {
         wxFont tmp_font = _installedListView->GetItemFont(slot);
@@ -520,7 +572,7 @@ void EvtMainFrame::getActiveSlot() {
         _installedListView->SetItemFont(slot, tmp_font);
     }
 
-    slot = _manager.getActiveSlot();
+    slot = _profileManager.currentProfile()->getActiveFrameSlot();
 
     if(slot != -1) {
         _installedListView->SetItemFont(slot, _installedListView->GetItemFont(slot).Bold());
@@ -530,14 +582,14 @@ void EvtMainFrame::getActiveSlot() {
 void EvtMainFrame::updateCommandsState() {
     long selection = _installedListView->GetFirstSelected();
     int staged_selection = _stagingList->GetSelection();
-    GameState game_state = _manager.gameState();
-    HangarState hangar_state = _manager.hangarState(selection);
+    GameState game_state = _mbManager.gameState();
+    MassState mass_state = _massManager->massState(selection);
 
     _importButton->Enable(selection != -1 && staged_selection != -1 && game_state != GameState::Running);
     _exportButton->Enable(selection != -1);
-    _moveButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty && hangar_state != HangarState::Invalid);
-    _deleteButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty);
-    _renameButton->Enable(selection != -1 && game_state != GameState::Running && hangar_state != HangarState::Empty);
+    _moveButton->Enable(selection != -1 && game_state == GameState::NotRunning && mass_state == MassState::Valid);
+    _deleteButton->Enable(selection != -1 && game_state == GameState::NotRunning && mass_state != MassState::Empty);
+    _renameButton->Enable(selection != -1 && game_state == GameState::NotRunning && mass_state == MassState::Valid);
     _deleteStagedButton->Enable(staged_selection != -1);
 
     long screenshot_selection = _screenshotsList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
@@ -550,17 +602,17 @@ void EvtMainFrame::refreshHangar(int slot) {
         return;
     }
 
-    _manager.refreshHangar(slot);
+    _massManager->refreshHangar(slot);
 
-    switch(_manager.hangarState(slot)) {
-        case HangarState::Empty:
+    switch(_massManager->massState(slot)) {
+        case MassState::Empty:
             _installedListView->SetItem(slot, 1, "<Empty>");
             break;
-        case HangarState::Invalid:
+        case MassState::Invalid:
             _installedListView->SetItem(slot, 1, "<Invalid>");
             break;
-        case HangarState::Filled:
-            _installedListView->SetItem(slot, 1, *(_manager.massName(slot)));
+        case MassState::Valid:
+            _installedListView->SetItem(slot, 1, _massManager->massName(slot));
             break;
     }
 }
@@ -570,7 +622,7 @@ void EvtMainFrame::updateScreenshotList() {
     _screenshotThumbs.RemoveAll();
 
     int index = 0;
-    for(const Screenshot& s : _manager.screenshots()) {
+    for(const Screenshot& s : _screenshotManager->screenshots()) {
         _screenshotsList->InsertItem(index,
                                      wxString::Format("%s\n%s", wxString::FromUTF8(s._filename.c_str()), s._creationDate.Format("%d/%m/%Y %H:%M:%S")),
                                      _screenshotThumbs.Add(s._thumbnail));
@@ -585,7 +637,8 @@ void EvtMainFrame::viewScreenshot() {
         return;
     }
 
-    wxBitmap image(Utility::Directory::toNativeSeparators(Utility::Directory::join(_manager.screenshotDirectory(), _manager.screenshots().at(selection)._filename)), wxBITMAP_TYPE_PNG);
+    wxBitmap image(Utility::Directory::toNativeSeparators(Utility::Directory::join(_screenshotManager->screenshotDirectory(),
+                                                                                   _screenshotManager->screenshots().at(selection)._filename)), wxBITMAP_TYPE_PNG);
 
     wxDialog view_dialog;
     view_dialog.Create(this, wxID_ANY, "Screenshot viewer", wxDefaultPosition, wxSize{1024, 576}, wxCAPTION|wxCLOSE_BOX|wxMAXIMIZE_BOX|wxMINIMIZE_BOX|wxRESIZE_BORDER|wxSYSTEM_MENU);

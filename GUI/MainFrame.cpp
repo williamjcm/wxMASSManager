@@ -20,7 +20,67 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	wxBoxSizer* bSizerMainPanel;
 	bSizerMainPanel = new wxBoxSizer( wxVERTICAL );
 
+	wxBoxSizer* bSizerProfile;
+	bSizerProfile = new wxBoxSizer( wxHORIZONTAL );
+
+	_profileLabel = new wxStaticText( _mainPanel, wxID_ANY, wxT("Profile to manage:"), wxDefaultPosition, wxDefaultSize, 0 );
+	_profileLabel->Wrap( -1 );
+	bSizerProfile->Add( _profileLabel, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	wxArrayString _profileChoiceChoices;
+	_profileChoice = new wxChoice( _mainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, _profileChoiceChoices, 0 );
+	_profileChoice->SetSelection( 0 );
+	_profileChoice->SetMinSize( wxSize( 150,-1 ) );
+
+	bSizerProfile->Add( _profileChoice, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	_backupSelectedButton = new wxButton( _mainPanel, wxID_ANY, wxT("Backup selected profile"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizerProfile->Add( _backupSelectedButton, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+
+	bSizerMainPanel->Add( bSizerProfile, 0, wxEXPAND, 5 );
+
 	_managerNotebook = new wxNotebook( _mainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
+	_profilePanel = new wxPanel( _managerNotebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizerProfilePanel;
+	bSizerProfilePanel = new wxBoxSizer( wxHORIZONTAL );
+
+	wxStaticBoxSizer* sbSizerGeneralInfo;
+	sbSizerGeneralInfo = new wxStaticBoxSizer( new wxStaticBox( _profilePanel, wxID_ANY, wxT("General information") ), wxVERTICAL );
+
+	wxFlexGridSizer* fgSizerGeneralStats;
+	fgSizerGeneralStats = new wxFlexGridSizer( 0, 2, 0, 0 );
+	fgSizerGeneralStats->AddGrowableCol( 1 );
+	fgSizerGeneralStats->SetFlexibleDirection( wxBOTH );
+	fgSizerGeneralStats->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+
+	_companyNameLabel = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Company name:"), wxDefaultPosition, wxDefaultSize, 0 );
+	_companyNameLabel->Wrap( -1 );
+	fgSizerGeneralStats->Add( _companyNameLabel, 0, wxALL, 5 );
+
+	_companyName = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("<blank>"), wxDefaultPosition, wxDefaultSize, 0 );
+	_companyName->Wrap( -1 );
+	fgSizerGeneralStats->Add( _companyName, 0, wxALL|wxEXPAND, 5 );
+
+	_creditsLabel = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Credits:"), wxDefaultPosition, wxDefaultSize, 0 );
+	_creditsLabel->Wrap( -1 );
+	fgSizerGeneralStats->Add( _creditsLabel, 0, wxALL, 5 );
+
+	_credits = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, 0 );
+	_credits->Wrap( -1 );
+	fgSizerGeneralStats->Add( _credits, 0, wxALL|wxEXPAND, 5 );
+
+
+	sbSizerGeneralInfo->Add( fgSizerGeneralStats, 1, wxEXPAND, 5 );
+
+
+	bSizerProfilePanel->Add( sbSizerGeneralInfo, 1, wxEXPAND|wxALL, 5 );
+
+
+	_profilePanel->SetSizer( bSizerProfilePanel );
+	_profilePanel->Layout();
+	bSizerProfilePanel->Fit( _profilePanel );
+	_managerNotebook->AddPage( _profilePanel, wxT("Profile details and stats"), false );
 	_massPanel = new wxPanel( _managerNotebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizerMassPanel;
 	bSizerMassPanel = new wxBoxSizer( wxHORIZONTAL );
@@ -50,9 +110,6 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	wxBoxSizer* bSizerSecondRow;
 	bSizerSecondRow = new wxBoxSizer( wxHORIZONTAL );
-
-	_zipButton = new wxButton( sbSizerInstalled->GetStaticBox(), wxID_ANY, wxT("Backup save files"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizerSecondRow->Add( _zipButton, 2, wxALL|wxEXPAND, 5 );
 
 	_openSaveDirButton = new wxButton( sbSizerInstalled->GetStaticBox(), wxID_ANY, wxT("Open save directory"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizerSecondRow->Add( _openSaveDirButton, 2, wxEXPAND|wxALL, 5 );
@@ -208,10 +265,12 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	this->Centre( wxBOTH );
 
 	// Connect Events
+	_profileChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( MainFrame::profileSelectionEvent ), NULL, this );
+	_backupSelectedButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSelectedProfileEvent ), NULL, this );
+	_managerNotebook->Connect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( MainFrame::tabChangeEvent ), NULL, this );
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
 	_renameButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );
-	_zipButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSavesEvent ), NULL, this );
 	_openSaveDirButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
 	_importButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::importMassEvent ), NULL, this );
 	_exportButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::exportMassEvent ), NULL, this );
@@ -234,10 +293,12 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 MainFrame::~MainFrame()
 {
 	// Disconnect Events
+	_profileChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( MainFrame::profileSelectionEvent ), NULL, this );
+	_backupSelectedButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSelectedProfileEvent ), NULL, this );
+	_managerNotebook->Disconnect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( MainFrame::tabChangeEvent ), NULL, this );
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
 	_renameButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );
-	_zipButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSavesEvent ), NULL, this );
 	_openSaveDirButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openSaveDirEvent ), NULL, this );
 	_importButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::importMassEvent ), NULL, this );
 	_exportButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::exportMassEvent ), NULL, this );

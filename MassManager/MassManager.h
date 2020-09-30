@@ -19,62 +19,27 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
-#include <Corrade/Containers/StaticArray.h>
-#include <Corrade/Containers/Optional.h>
+#include <Corrade/Containers/GrowableArray.h>
 
-#include <wx/datetime.h>
-#include <wx/image.h>
+#include "../Mass/Mass.h"
 
 using namespace Corrade;
 
-enum class GameState : uint8_t {
-    Unknown, NotRunning, Running
-};
-
-enum class HangarState : uint8_t {
-    Empty, Invalid, Filled
-};
-
-enum class SortType : uint8_t {
-    Filename, CreationDate
-};
-
-enum class SortOrder: uint8_t {
-    Ascending, Descending
-};
-
-struct Screenshot {
-    std::string _filename;
-    wxDateTime  _creationDate;
-    wxImage     _thumbnail;
-};
-
 class MassManager {
     public:
-        MassManager();
-
-        auto ready() -> bool;
-        auto lastError() -> std::string const&;
-
-        auto hasDemoUnits() -> bool;
-        void addDemoUnitsToStaging();
+        MassManager(const std::string& save_path, const std::string& steam_id, bool demo);
 
         auto saveDirectory() -> std::string const&;
         auto stagingAreaDirectory() -> std::string const&;
-        auto screenshotDirectory() -> std::string const&;
 
-        auto steamId() -> std::string const&;
-        auto profileSaveName() -> std::string const&;
+        auto lastError() -> std::string const&;
 
-        auto checkGameState() -> GameState;
-        auto gameState() -> GameState;
+        auto massName(int hangar) -> std::string const&;
+        auto massState(int hangar) -> MassState;
 
-        auto getActiveSlot() -> char;
-        auto activeSlot() -> char;
+        void refreshHangar(int hangar);
 
-        auto importMass(const std::string& source, int hangar) -> bool;
         auto importMass(int staged_index, int hangar) -> bool;
         auto exportMass(int hangar) -> bool;
 
@@ -82,64 +47,26 @@ class MassManager {
         auto deleteMass(int hangar) -> bool;
         auto renameMass(int hangar, const std::string& new_name) -> bool;
 
-        auto backupSaves(const std::string& filename) -> bool;
+        auto stagedMasses() -> std::map<std::string, std::string> const&;
 
-        void refreshHangar(int hangar);
-        auto hangarState(int hangar) -> HangarState;
-        auto massName(int hangar) -> Containers::Optional<std::string>;
+        auto stagedMassName(int index) -> std::string;
 
-        auto getMassName(const std::string& filename) -> Containers::Optional<std::string>;
-
-        auto initialiseStagingArea() -> std::vector<std::string>;
         auto updateStagedMass(const std::string& filename) -> int;
         auto removeStagedMass(const std::string& filename) -> int;
         void deleteStagedMass(int index);
-        auto stagedMassName(int index) -> std::string;
-        auto stagedMassName(const std::string& filename) -> std::string;
-
-        auto findScreenshotDirectory() -> bool;
-        void loadScreenshots();
-        auto screenshots() -> std::vector<Screenshot> const&;
-        void sortScreenshots(SortType type);
-        void sortScreenshots(SortOrder order);
-        void sortScreenshots();
-        auto updateScreenshot(const std::string& filename) -> int;
-        void removeScreenshot(int index);
-        void deleteScreenshot(int index);
 
     private:
-        auto findSaveDirectory() -> bool;
-        auto findSteamId() -> bool;
-
-        void addScreenshot(const std::string& filename);
-
-        bool _ready = false;
+        std::string _saveDirectory;
+        std::string _steamId;
+        bool _demo;
 
         std::string _lastError = "";
 
-        std::string _stagingAreaDirectory = "";
-        std::string _saveDirectory = "";
-        std::string _screenshotDirectory = "";
-        std::string _steamId = "";
-        std::string _profileSaveName = "";
+        Containers::Array<Mass> _hangars;
 
-        GameState _gameState = GameState::Unknown;
-
-        char _activeSlot = -1;
-
-        struct Hangar {
-            HangarState _state = HangarState::Empty;
-            Containers::Optional<std::string> _massName = Containers::NullOpt;
-            std::string _filename = "";
-        };
-
-        Containers::StaticArray<32, Hangar> _hangars{Containers::ValueInit};
+        static const std::string _stagingAreaDirectory;
 
         std::map<std::string, std::string> _stagedMasses;
-
-        std::vector<Screenshot> _screenshots;
-        SortType  _sortType  = SortType::Filename;
-        SortOrder _sortOrder = SortOrder::Ascending;
 };
 
 #endif //MASSMANAGER_H
