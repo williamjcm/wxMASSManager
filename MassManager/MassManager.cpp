@@ -241,7 +241,7 @@ auto MassManager::stagedMasses() -> std::map<std::string, std::string> const& {
     return _stagedMasses;
 }
 
-auto MassManager::stagedMassName(int index) -> std::string {
+auto MassManager::stagedMassName(int index) -> std::string const& {
     int i = 0;
     for(const auto& mass_info : _stagedMasses) {
         if(i != index) {
@@ -252,7 +252,7 @@ auto MassManager::stagedMassName(int index) -> std::string {
         return mass_info.second;
     }
 
-    return std::string{""};
+    return empty_string;
 }
 
 auto MassManager::updateStagedMass(const std::string& filename) -> int {

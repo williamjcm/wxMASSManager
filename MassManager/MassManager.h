@@ -49,7 +49,7 @@ class MassManager {
 
         auto stagedMasses() -> std::map<std::string, std::string> const&;
 
-        auto stagedMassName(int index) -> std::string;
+        auto stagedMassName(int index) -> std::string const&;
 
         auto updateStagedMass(const std::string& filename) -> int;
         auto removeStagedMass(const std::string& filename) -> int;
