@@ -387,7 +387,7 @@ void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
     wxString event_path = event.GetPath().GetPath(wxPATH_GET_VOLUME, wxPATH_WIN);
 
     if(event_path == Utility::Directory::toNativeSeparators(_massManager->saveDirectory())) {
-        unitFileEventHandler(event_type, event_file, event);
+        saveFileEventHandler(event_type, event_file, event);
     }
     else if(event_path == Utility::Directory::toNativeSeparators(_massManager->stagingAreaDirectory())) {
         stagingFileEventHandler(event_type, event_file, event);
@@ -405,7 +405,7 @@ void EvtMainFrame::gameCheckTimerEvent(wxTimerEvent&) {
     isGameRunning();
 }
 
-void EvtMainFrame::unitFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event) {
+void EvtMainFrame::saveFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event) {
     wxRegEx regex;
 
     switch (event_type) {

@@ -76,7 +76,7 @@ class EvtMainFrame: public MainFrame {
         void gameCheckTimerEvent(wxTimerEvent&);
 
     private:
-        void unitFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
+        void saveFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
         void stagingFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
         void screenshotFileEventHandler(int event_type, const wxString& event_file);
 
