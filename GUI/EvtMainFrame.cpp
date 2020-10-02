@@ -425,6 +425,7 @@ void EvtMainFrame::saveFileEventHandler(int event_type, const wxString& event_fi
                 break;
             }
             if(event_file == _profileManager.currentProfile()->filename()) {
+                updateProfileStats();
                 getActiveSlot();
             }
             else {
