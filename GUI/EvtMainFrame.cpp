@@ -515,8 +515,9 @@ void EvtMainFrame::screenshotFileEventHandler(int event_type, const wxString& ev
 }
 
 void EvtMainFrame::updateProfileStats() {
-    _companyName->SetLabel(_profileManager.currentProfile()->companyName());
-    _credits->SetLabel(wxString::Format("%i", _profileManager.currentProfile()->getCredits()));
+    Profile* current_profile = _profileManager.currentProfile();
+    _companyName->SetLabel(current_profile->companyName());
+    _credits->SetLabel(wxString::Format("%i", current_profile->getCredits()));
 }
 
 void EvtMainFrame::initialiseListView() {
