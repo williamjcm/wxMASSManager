@@ -382,7 +382,7 @@ void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
         return;
     }
 
-    wxMilliSleep(50);
+    wxMilliSleep(100);
 
     wxString event_path = event.GetPath().GetPath(wxPATH_GET_VOLUME, wxPATH_WIN);
 
