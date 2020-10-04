@@ -52,6 +52,10 @@ class MainFrame : public wxFrame
 		wxStaticText* _companyName;
 		wxStaticText* _creditsLabel;
 		wxStaticText* _credits;
+		wxStaticText* _storyProgressLabel;
+		wxStaticText* _storyProgress;
+		wxStaticText* _lastMissionIdLabel;
+		wxStaticText* _lastMissionId;
 		wxPanel* _massPanel;
 		wxListView* _installedListView;
 		wxButton* _moveButton;

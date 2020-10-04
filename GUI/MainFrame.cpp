@@ -43,7 +43,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_managerNotebook = new wxNotebook( _mainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
 	_profilePanel = new wxPanel( _managerNotebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizerProfilePanel;
-	bSizerProfilePanel = new wxBoxSizer( wxHORIZONTAL );
+	bSizerProfilePanel = new wxBoxSizer( wxVERTICAL );
 
 	wxStaticBoxSizer* sbSizerGeneralInfo;
 	sbSizerGeneralInfo = new wxStaticBoxSizer( new wxStaticBox( _profilePanel, wxID_ANY, wxT("General information") ), wxVERTICAL );
@@ -69,6 +69,30 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_credits = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, 0 );
 	_credits->Wrap( -1 );
 	fgSizerGeneralStats->Add( _credits, 0, wxALL|wxEXPAND, 5 );
+
+	_storyProgressLabel = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Story progress:"), wxDefaultPosition, wxDefaultSize, 0 );
+	_storyProgressLabel->Wrap( -1 );
+	_storyProgressLabel->SetToolTip( wxT("What this value does or corresponds to is unknown at this point in time. It is only listed here for the sake of completion.") );
+
+	fgSizerGeneralStats->Add( _storyProgressLabel, 0, wxALL, 5 );
+
+	_storyProgress = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, 0 );
+	_storyProgress->Wrap( -1 );
+	_storyProgress->SetToolTip( wxT("What this value does or corresponds to is unknown at this point in time. It is only listed here for the sake of completion.") );
+
+	fgSizerGeneralStats->Add( _storyProgress, 0, wxALL, 5 );
+
+	_lastMissionIdLabel = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Last mission ID:"), wxDefaultPosition, wxDefaultSize, 0 );
+	_lastMissionIdLabel->Wrap( -1 );
+	_lastMissionIdLabel->SetToolTip( wxT("This corresponds to the last mission menu selection, not the last mission played.\nIf you see just a number instead of the mission name, please report it to the creator of this application.") );
+
+	fgSizerGeneralStats->Add( _lastMissionIdLabel, 0, wxALL, 5 );
+
+	_lastMissionId = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, 0 );
+	_lastMissionId->Wrap( -1 );
+	_lastMissionId->SetToolTip( wxT("This corresponds to the last mission menu selection, not the last mission played.\nIf you see just a number instead of the mission name, please report it to the creator of this application.") );
+
+	fgSizerGeneralStats->Add( _lastMissionId, 0, wxALL, 5 );
 
 
 	sbSizerGeneralInfo->Add( fgSizerGeneralStats, 1, wxEXPAND, 5 );

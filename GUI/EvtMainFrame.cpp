@@ -36,6 +36,24 @@
 
 #include "EvtMainFrame.h"
 
+static const std::map<std::int32_t, const char*> mission_id_map {{
+    {25600, "Mission 1 - Training"},
+    {25856, "Mission 2 - Patrol Operation"},
+    {26112, "Mission 3 - Fusion Cells in the Snow"},
+    {26368, "Mission 4 - Earning Changes"},
+    {26624, "Mission 5 - Unexpected Coordination"},
+    {26880, "Mission 6 - Empowering Void"},
+    {27136, "Mission 7 - Logisitics Obstacles"},
+    {27392, "Mission 8 - Wrath of the Wastelands"},
+    {27648, "Mission 9 - Suspicious Originator"},
+    {27904, "Mission 10 - Researchers Data Recovery"},
+    {28160, "Mission 11 - Tempestuous Sector"},
+    {28416, "Mission 12 - Clashes of Metal"},
+    {51200, "Hunting Ground 1 - Desert Pathway Safety"},
+    {51456, "Hunting Ground 2 - Snowfield Custodian"},
+    {51712, "Hunting Ground 3 - Abandoned Valley Raid"},
+}};
+
 EvtMainFrame::EvtMainFrame(wxWindow* parent):
     MainFrame(parent),
     _profileManager{_mbManager.saveDirectory()}
@@ -519,6 +537,8 @@ void EvtMainFrame::updateProfileStats() {
     Profile* current_profile = _profileManager.currentProfile();
     _companyName->SetLabel(current_profile->companyName());
     _credits->SetLabel(wxString::Format("%i", current_profile->getCredits()));
+    _storyProgress->SetLabel(wxString::Format("%i", current_profile->getStoryProgress()));
+    _lastMissionId->SetLabel(wxString::Format("%s", mission_id_map.find(current_profile->getLastMissionId()) != mission_id_map.end() ? mission_id_map.at(current_profile->lastMissionId()) : std::to_string(current_profile->lastMissionId())));
 }
 
 void EvtMainFrame::initialiseListView() {

@@ -35,6 +35,8 @@
 constexpr char company_name_locator[] = "CompanyName\0\x0c\0\0\0StrProperty";
 constexpr char active_slot_locator[] = "ActiveFrameSlot\0\x0c\0\0\0IntProperty";
 constexpr char credits_locator[] = "Credit\0\x0c\0\0\0IntProperty";
+constexpr char story_progress_locator[] = "StoryProgress\0\x0c\0\0\0IntProperty";
+constexpr char last_mission_id_locator[] = "LastMissionID\0\x0c\0\0\0IntProperty";
 
 using namespace Corrade;
 
@@ -132,10 +134,51 @@ auto Profile::getCredits() -> std::int32_t {
         _credits = *reinterpret_cast<const std::int32_t*>(iter + 0x20);
     }
     else{
+        _lastError = "The profile save seems to be corrupted or the game didn't release the handle on the file.";
         _credits = -1;
     }
 
     return _credits;
+}
+
+auto Profile::storyProgress() -> std::int32_t {
+    return _storyProgress;
+}
+
+auto Profile::getStoryProgress() -> std::int32_t {
+    auto mmap = Utility::Directory::mapRead(Utility::Directory::join(_profileDirectory, _filename));
+
+    auto iter = std::search(mmap.begin(), mmap.end(), &story_progress_locator[0], &story_progress_locator[29]);
+
+    if(iter != mmap.end()) {
+        _storyProgress = *reinterpret_cast<const std::int32_t*>(iter + 0x26);
+    }
+    else{
+        _lastError = "The profile save seems to be corrupted or the game didn't release the handle on the file.";
+        _storyProgress = -1;
+    }
+
+    return _storyProgress;
+}
+
+auto Profile::lastMissionId() -> std::int32_t {
+    return _lastMissionId;
+}
+
+auto Profile::getLastMissionId() -> std::int32_t {
+    auto mmap = Utility::Directory::mapRead(Utility::Directory::join(_profileDirectory, _filename));
+
+    auto iter = std::search(mmap.begin(), mmap.end(), &last_mission_id_locator[0], &last_mission_id_locator[29]);
+
+    if(iter != mmap.end()) {
+        _lastMissionId = *reinterpret_cast<const std::int32_t*>(iter + 0x26);
+    }
+    else{
+        _lastError = "The profile save seems to be corrupted or the game didn't release the handle on the file.";
+        _lastMissionId = -1;
+    }
+
+    return _lastMissionId;
 }
 
 auto Profile::backup(const std::string& filename) -> bool {
