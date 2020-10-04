@@ -129,10 +129,7 @@ auto Profile::getCredits() -> std::int32_t {
     auto iter = std::search(mmap.begin(), mmap.end(), &credits_locator[0], &credits_locator[22]);
 
     if(iter != mmap.end()) {
-        _credits = ((*(iter + 0x20)) << 0)  +
-                   ((*(iter + 0x21)) << 8)  +
-                   ((*(iter + 0x22)) << 16) +
-                   ((*(iter + 0x23)) << 24);
+        _credits = *reinterpret_cast<const std::int32_t*>(iter + 0x20);
     }
     else{
         _credits = -1;
