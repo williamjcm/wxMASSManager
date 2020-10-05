@@ -24,7 +24,7 @@ set(CMAKE_CXX_EXTENSIONS ON)
 
 option(USE_CORRADE_SUBMODULE "Use Corrade from the Git submodule. If set to OFF, make sure you have Corrade 2020.06 or later installed to a path CMake can search in." ON)
 
-if(NOT USE_CORRADE_SUBMODULE)
+if(USE_CORRADE_SUBMODULE)
     set(BUILD_STATIC ON CACHE BOOL "" FORCE)
     set(WITH_INTERCONNECT OFF CACHE BOOL "" FORCE)
     set(WITH_PLUGINMANAGER OFF CACHE BOOL "" FORCE)
