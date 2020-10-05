@@ -56,10 +56,14 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	_companyNameLabel = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Company name:"), wxDefaultPosition, wxDefaultSize, 0 );
 	_companyNameLabel->Wrap( -1 );
+	_companyNameLabel->SetToolTip( wxT("EXPERIMENTAL: Double-click the company name to rename it.") );
+
 	fgSizerGeneralStats->Add( _companyNameLabel, 0, wxALL, 5 );
 
 	_companyName = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("<blank>"), wxDefaultPosition, wxDefaultSize, 0 );
 	_companyName->Wrap( -1 );
+	_companyName->SetToolTip( wxT("EXPERIMENTAL: Double-click the company name to rename it.") );
+
 	fgSizerGeneralStats->Add( _companyName, 0, wxALL|wxEXPAND, 5 );
 
 	_creditsLabel = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Credits:"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -267,7 +271,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	bSizerMainPanel->Add( bSizerGameStatus, 0, wxALIGN_CENTER_HORIZONTAL, 5 );
 
-	_aboutText = new wxStaticText( _mainPanel, wxID_ANY, wxT("This version of the application was tested on M.A.S.S. Builder early access version 0.4.5.\nIt may or may not work with other versions of the game.\nMade for the M.A.S.S. Builder community by Guillaume Jacquemin."), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL );
+	_aboutText = new wxStaticText( _mainPanel, wxID_ANY, wxT("This version of the application was partially tested on M.A.S.S. Builder early access version 0.5.4.\nIt may or may not work with other versions of the game.\nMade for the M.A.S.S. Builder community by Guillaume Jacquemin."), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL );
 	_aboutText->Wrap( -1 );
 	bSizerMainPanel->Add( _aboutText, 0, wxEXPAND|wxRIGHT|wxLEFT|wxALIGN_CENTER_HORIZONTAL, 5 );
 
@@ -292,6 +296,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_profileChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( MainFrame::profileSelectionEvent ), NULL, this );
 	_backupSelectedButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSelectedProfileEvent ), NULL, this );
 	_managerNotebook->Connect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( MainFrame::tabChangeEvent ), NULL, this );
+	_companyName->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( MainFrame::companyRenameEvent ), NULL, this );
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
 	_renameButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );
@@ -320,6 +325,7 @@ MainFrame::~MainFrame()
 	_profileChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( MainFrame::profileSelectionEvent ), NULL, this );
 	_backupSelectedButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSelectedProfileEvent ), NULL, this );
 	_managerNotebook->Disconnect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( MainFrame::tabChangeEvent ), NULL, this );
+	_companyName->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( MainFrame::companyRenameEvent ), NULL, this );
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
 	_renameButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );

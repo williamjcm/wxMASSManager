@@ -87,6 +87,7 @@ class MainFrame : public wxFrame
 		virtual void profileSelectionEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void backupSelectedProfileEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void tabChangeEvent( wxNotebookEvent& event ) { event.Skip(); }
+		virtual void companyRenameEvent( wxMouseEvent& event ) { event.Skip(); }
 		virtual void moveMassEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void deleteMassEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void renameMassEvent( wxCommandEvent& event ) { event.Skip(); }
@@ -110,7 +111,7 @@ class MainFrame : public wxFrame
 
 	public:
 
-		MainFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("M.A.S.S. Builder Save Tool 2.0.0-alpha"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCAPTION|wxCLOSE_BOX|wxMINIMIZE_BOX|wxSYSTEM_MENU|wxCLIP_CHILDREN|wxTAB_TRAVERSAL );
+		MainFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("M.A.S.S. Builder Save Tool 2.0.0-pre"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCAPTION|wxCLOSE_BOX|wxMINIMIZE_BOX|wxSYSTEM_MENU|wxCLIP_CHILDREN|wxTAB_TRAVERSAL );
 
 		~MainFrame();
 

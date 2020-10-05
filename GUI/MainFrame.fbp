@@ -48,7 +48,7 @@
             <property name="size">-1,-1</property>
             <property name="style">wxCAPTION|wxCLOSE_BOX|wxMINIMIZE_BOX|wxSYSTEM_MENU</property>
             <property name="subclass">; ; forward_declare</property>
-            <property name="title">M.A.S.S. Builder Save Tool 2.0.0-alpha</property>
+            <property name="title">M.A.S.S. Builder Save Tool 2.0.0-pre</property>
             <property name="tooltip"></property>
             <property name="window_extra_style"></property>
             <property name="window_name"></property>
@@ -529,7 +529,7 @@
                                                                         <property name="style"></property>
                                                                         <property name="subclass">; ; forward_declare</property>
                                                                         <property name="toolbar_pane">0</property>
-                                                                        <property name="tooltip"></property>
+                                                                        <property name="tooltip">EXPERIMENTAL: Double-click the company name to rename it.</property>
                                                                         <property name="window_extra_style"></property>
                                                                         <property name="window_name"></property>
                                                                         <property name="window_style"></property>
@@ -590,11 +590,12 @@
                                                                         <property name="style"></property>
                                                                         <property name="subclass">; ; forward_declare</property>
                                                                         <property name="toolbar_pane">0</property>
-                                                                        <property name="tooltip"></property>
+                                                                        <property name="tooltip">EXPERIMENTAL: Double-click the company name to rename it.</property>
                                                                         <property name="window_extra_style"></property>
                                                                         <property name="window_name"></property>
                                                                         <property name="window_style"></property>
                                                                         <property name="wrap">-1</property>
+                                                                        <event name="OnLeftDClick">companyRenameEvent</event>
                                                                     </object>
                                                                 </object>
                                                                 <object class="sizeritem" expanded="1">
@@ -2689,7 +2690,7 @@
                                     <property name="gripper">0</property>
                                     <property name="hidden">0</property>
                                     <property name="id">wxID_ANY</property>
-                                    <property name="label">This version of the application was tested on M.A.S.S. Builder early access version 0.4.5.&#x0A;It may or may not work with other versions of the game.&#x0A;Made for the M.A.S.S. Builder community by Guillaume Jacquemin.</property>
+                                    <property name="label">This version of the application was partially tested on M.A.S.S. Builder early access version 0.5.4.&#x0A;It may or may not work with other versions of the game.&#x0A;Made for the M.A.S.S. Builder community by Guillaume Jacquemin.</property>
                                     <property name="markup">0</property>
                                     <property name="max_size"></property>
                                     <property name="maximize_button">0</property>
