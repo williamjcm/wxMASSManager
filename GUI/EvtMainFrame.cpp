@@ -49,9 +49,11 @@ static const std::map<std::int32_t, const char*> mission_id_map {{
     {27904, "Mission 10 - Researchers Data Recovery"},
     {28160, "Mission 11 - Tempestuous Sector"},
     {28416, "Mission 12 - Clashes of Metal"},
+    {28672, "Mission 13 - The Sandstorm Glutton"},
     {51200, "Hunting Ground 1 - Desert Pathway Safety"},
     {51456, "Hunting Ground 2 - Snowfield Custodian"},
     {51712, "Hunting Ground 3 - Abandoned Valley Raid"},
+    {51968, "Hunting Ground 4 - Depths of the Machineries"},
 }};
 
 EvtMainFrame::EvtMainFrame(wxWindow* parent):
