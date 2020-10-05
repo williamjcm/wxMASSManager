@@ -439,10 +439,10 @@ void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
     if(event_path == Utility::Directory::toNativeSeparators(_massManager->saveDirectory())) {
         saveFileEventHandler(event_type, event_file, event);
     }
-    else if(event_path == Utility::Directory::toNativeSeparators(_massManager->stagingAreaDirectory())) {
+    else if(_massManager && event_path == Utility::Directory::toNativeSeparators(_massManager->stagingAreaDirectory())) {
         stagingFileEventHandler(event_type, event_file, event);
     }
-    else if(event_path == Utility::Directory::toNativeSeparators(_screenshotManager->screenshotDirectory())) {
+    else if(_screenshotManager && event_path == Utility::Directory::toNativeSeparators(_screenshotManager->screenshotDirectory())) {
         screenshotFileEventHandler(event_type, event_file);
     }
 
