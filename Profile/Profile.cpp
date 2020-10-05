@@ -141,7 +141,7 @@ auto Profile::getCredits() -> std::int32_t {
     return _credits;
 }
 
-auto Profile::storyProgress() -> std::int32_t {
+auto Profile::storyProgress() const -> std::int32_t {
     return _storyProgress;
 }
 
@@ -161,7 +161,7 @@ auto Profile::getStoryProgress() -> std::int32_t {
     return _storyProgress;
 }
 
-auto Profile::lastMissionId() -> std::int32_t {
+auto Profile::lastMissionId() const -> std::int32_t {
     return _lastMissionId;
 }
 

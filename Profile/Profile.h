@@ -32,10 +32,10 @@ class Profile {
         auto credits() const -> std::int32_t;
         auto getCredits() -> std::int32_t;
 
-        auto storyProgress() -> std::int32_t;
+        auto storyProgress() const -> std::int32_t;
         auto getStoryProgress() -> std::int32_t;
 
-        auto lastMissionId() -> std::int32_t;
+        auto lastMissionId() const -> std::int32_t;
         auto getLastMissionId() -> std::int32_t;
 
         auto backup(const std::string& filename) -> bool;
