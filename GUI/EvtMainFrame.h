@@ -45,6 +45,7 @@ class EvtMainFrame: public MainFrame {
         // Profile-related events
         void profileSelectionEvent(wxCommandEvent&);
         void backupSelectedProfileEvent(wxCommandEvent&);
+        void companyRenameEvent(wxMouseEvent&);
 
         // M.A.S.S.-related events
         void importMassEvent(wxCommandEvent&);

@@ -174,6 +174,36 @@ void EvtMainFrame::backupSelectedProfileEvent(wxCommandEvent&) {
     }
 }
 
+void EvtMainFrame::companyRenameEvent(wxMouseEvent&) {
+    const static std::string error_prefix = "Rename failed:\n\n";
+
+    EvtNameChangeDialog dialog{this};
+    dialog.setName(_profileManager.currentProfile()->companyName());
+    int result = dialog.ShowModal();
+
+    if(result == wxID_OK) {
+        switch(_mbManager.gameState()) {
+            case GameState::Unknown:
+                errorMessage(error_prefix + "For security reasons, renaming the company is disabled if the game's status is unknown.");
+                break;
+            case GameState::NotRunning:
+                if(!_profileManager.currentProfile()->renameCompany(dialog.getName())) {
+                    errorMessage(error_prefix + _profileManager.currentProfile()->lastError());
+                }
+                else {
+                    _profileChoice->SetString(_profileChoice->GetCurrentSelection(),
+                                              wxString::Format("%s%s",
+                                                               _profileManager.currentProfile()->companyName(),
+                                                               _profileManager.currentProfile()->type() == ProfileType::Demo ? " (Demo)" : ""));
+                }
+                break;
+            case GameState::Running:
+                errorMessage(error_prefix + "Renaming the company is disabled while the game is running.");
+                break;
+        }
+    }
+}
+
 void EvtMainFrame::importMassEvent(wxCommandEvent&) {
     const static std::string error_prefix = "Importing failed:\n\n";
 
@@ -537,7 +567,7 @@ void EvtMainFrame::screenshotFileEventHandler(int event_type, const wxString& ev
 
 void EvtMainFrame::updateProfileStats() {
     Profile* current_profile = _profileManager.currentProfile();
-    _companyName->SetLabel(current_profile->companyName());
+    _companyName->SetLabel(current_profile->getCompanyName());
     _credits->SetLabel(wxString::Format("%i", current_profile->getCredits()));
     _storyProgress->SetLabel(wxString::Format("%i", current_profile->getStoryProgress()));
     _lastMissionId->SetLabel(wxString::Format("%s", mission_id_map.find(current_profile->getLastMissionId()) != mission_id_map.end() ? mission_id_map.at(current_profile->lastMissionId()) : std::to_string(current_profile->lastMissionId())));

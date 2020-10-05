@@ -25,6 +25,8 @@ class Profile {
         auto steamId() const -> std::string const&;
 
         auto companyName() const -> std::string const&;
+        auto getCompanyName() -> std::string const&;
+        auto renameCompany(const std::string& new_name) -> bool;
 
         auto activeFrameSlot() const -> std::int8_t;
         auto getActiveFrameSlot() -> std::int8_t;

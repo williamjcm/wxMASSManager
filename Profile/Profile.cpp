@@ -96,6 +96,56 @@ auto Profile::companyName() const -> std::string const& {
     return _companyName;
 }
 
+auto Profile::getCompanyName() -> std::string const& {
+    auto mmap = Utility::Directory::mapRead(Utility::Directory::join(_profileDirectory, _filename));
+
+    auto it = std::search(mmap.begin(), mmap.end(), &company_name_locator[0], &company_name_locator[27]);
+
+    if(it == mmap.end()) {
+        _lastError = "Couldn't find a company name in " + _filename;
+        _companyName = "";
+    }
+    else {
+        _companyName = std::string{it + 41};
+    }
+
+    return _companyName;
+}
+
+auto Profile::renameCompany(const std::string& new_name) -> bool {
+    char length_difference = static_cast<char>(_companyName.length() - new_name.length());
+
+    std::string profile_data = Utility::Directory::readString(Utility::Directory::join(_profileDirectory, _filename));
+
+    auto iter = std::search(profile_data.begin(), profile_data.end(), &company_name_locator[0], &company_name_locator[27]);
+
+    if(iter != profile_data.end()) {
+
+        *(iter + 0x1C) = *(iter + 0x1C) - length_difference;
+        *(iter + 0x25) = *(iter + 0x25) - length_difference;
+
+        while(*(iter + 0x29) != '\0') {
+            profile_data.erase(iter + 0x29);
+        }
+
+        profile_data.insert(iter + 0x29, new_name.cbegin(), new_name.cend());
+
+        if(!Utility::Directory::writeString(Utility::Directory::join(_profileDirectory, _filename), profile_data)) {
+            _lastError = "The file" + _filename + " couldn't be written to.";
+            return false;
+        }
+
+        _companyName = new_name;
+
+        return true;
+    }
+    else {
+        _lastError = "Couldn't find the company name in " + _filename;
+
+        return false;
+    }
+}
+
 auto Profile::activeFrameSlot() const -> std::int8_t {
     return _activeFrameSlot;
 }
