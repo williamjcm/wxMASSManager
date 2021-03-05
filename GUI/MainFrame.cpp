@@ -38,6 +38,14 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	bSizerProfile->Add( _backupSelectedButton, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
 
 
+	bSizerProfile->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	_unsafeCheckbox = new wxCheckBox( _mainPanel, wxID_ANY, wxT("Unsafe mode"), wxDefaultPosition, wxDefaultSize, 0 );
+	_unsafeCheckbox->SetToolTip( wxT("CLICK AT YOUR OWN RISK!") );
+
+	bSizerProfile->Add( _unsafeCheckbox, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+
 	bSizerMainPanel->Add( bSizerProfile, 0, wxEXPAND, 5 );
 
 	_managerNotebook = new wxNotebook( _mainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
@@ -295,6 +303,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	// Connect Events
 	_profileChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( MainFrame::profileSelectionEvent ), NULL, this );
 	_backupSelectedButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSelectedProfileEvent ), NULL, this );
+	_unsafeCheckbox->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
 	_managerNotebook->Connect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( MainFrame::tabChangeEvent ), NULL, this );
 	_companyName->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( MainFrame::companyRenameEvent ), NULL, this );
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
@@ -324,6 +333,7 @@ MainFrame::~MainFrame()
 	// Disconnect Events
 	_profileChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( MainFrame::profileSelectionEvent ), NULL, this );
 	_backupSelectedButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSelectedProfileEvent ), NULL, this );
+	_unsafeCheckbox->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
 	_managerNotebook->Disconnect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( MainFrame::tabChangeEvent ), NULL, this );
 	_companyName->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( MainFrame::companyRenameEvent ), NULL, this );
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );

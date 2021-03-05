@@ -20,6 +20,7 @@
 #include <wx/image.h>
 #include <wx/icon.h>
 #include <wx/button.h>
+#include <wx/checkbox.h>
 #include <wx/sizer.h>
 #include <wx/statbox.h>
 #include <wx/panel.h>
@@ -46,6 +47,7 @@ class MainFrame : public wxFrame
 		wxStaticText* _profileLabel;
 		wxChoice* _profileChoice;
 		wxButton* _backupSelectedButton;
+		wxCheckBox* _unsafeCheckbox;
 		wxNotebook* _managerNotebook;
 		wxPanel* _profilePanel;
 		wxStaticText* _companyNameLabel;
@@ -86,6 +88,7 @@ class MainFrame : public wxFrame
 		// Virtual event handlers, overide them in your derived class
 		virtual void profileSelectionEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void backupSelectedProfileEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void unsafeCheckboxEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void tabChangeEvent( wxNotebookEvent& event ) { event.Skip(); }
 		virtual void companyRenameEvent( wxMouseEvent& event ) { event.Skip(); }
 		virtual void moveMassEvent( wxCommandEvent& event ) { event.Skip(); }
