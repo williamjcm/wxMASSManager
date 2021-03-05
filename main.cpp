@@ -28,7 +28,7 @@ class MyApp: public wxApp {
     public:
         bool OnInit() {
             SetAppName("wxMASSManager");
-            SetAppDisplayName("wxMASSManager");
+            SetAppDisplayName("M.A.S.S. Builder Save Tool");
 
             wxImage::AddHandler(new wxPNGHandler);
 

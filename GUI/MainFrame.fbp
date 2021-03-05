@@ -48,7 +48,7 @@
             <property name="size">-1,-1</property>
             <property name="style">wxCAPTION|wxCLOSE_BOX|wxMINIMIZE_BOX|wxSYSTEM_MENU</property>
             <property name="subclass">; ; forward_declare</property>
-            <property name="title">M.A.S.S. Builder Save Tool 2.0.0-pre1</property>
+            <property name="title">M.A.S.S. Builder Save Tool 2.0.0</property>
             <property name="tooltip"></property>
             <property name="window_extra_style"></property>
             <property name="window_name"></property>
@@ -2765,7 +2765,7 @@
                                     <property name="gripper">0</property>
                                     <property name="hidden">0</property>
                                     <property name="id">wxID_ANY</property>
-                                    <property name="label">This version of the application was partially tested on M.A.S.S. Builder early access version 0.5.4.&#x0A;It may or may not work with other versions of the game.&#x0A;Made for the M.A.S.S. Builder community by Guillaume Jacquemin.</property>
+                                    <property name="label">This version of the application was partially tested on M.A.S.S. Builder early access version 0.5.7.&#x0A;It may or may not work with other versions of the game.&#x0A;Made for the M.A.S.S. Builder community by Guillaume Jacquemin.</property>
                                     <property name="markup">0</property>
                                     <property name="max_size"></property>
                                     <property name="maximize_button">0</property>
