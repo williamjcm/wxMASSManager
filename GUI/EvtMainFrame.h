@@ -75,6 +75,7 @@ class EvtMainFrame: public MainFrame {
         void tabChangeEvent(wxNotebookEvent& event);
         void fileUpdateEvent(wxFileSystemWatcherEvent& event);
         void gameCheckTimerEvent(wxTimerEvent&);
+        void unsafeCheckboxEvent(wxCommandEvent& event);
 
     private:
         void saveFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
@@ -96,6 +97,8 @@ class EvtMainFrame: public MainFrame {
         void infoMessage(const wxString& message);
         void warningMessage(const wxString& message);
         void errorMessage(const wxString& message);
+
+        bool _unsafeMode = false;
 
         MassBuilderManager _mbManager;
         ProfileManager _profileManager;

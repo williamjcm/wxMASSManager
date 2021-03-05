@@ -192,24 +192,37 @@ void EvtMainFrame::companyRenameEvent(wxMouseEvent&) {
     int result = dialog.ShowModal();
 
     if(result == wxID_OK) {
-        switch(_mbManager.gameState()) {
-            case GameState::Unknown:
-                errorMessage(error_prefix + "For security reasons, renaming the company is disabled if the game's status is unknown.");
-                break;
-            case GameState::NotRunning:
-                if(!_profileManager.currentProfile()->renameCompany(dialog.getName())) {
-                    errorMessage(error_prefix + _profileManager.currentProfile()->lastError());
-                }
-                else {
-                    _profileChoice->SetString(_profileChoice->GetCurrentSelection(),
-                                              wxString::Format("%s%s",
-                                                               _profileManager.currentProfile()->companyName(),
-                                                               _profileManager.currentProfile()->type() == ProfileType::Demo ? " (Demo)" : ""));
-                }
-                break;
-            case GameState::Running:
-                errorMessage(error_prefix + "Renaming the company is disabled while the game is running.");
-                break;
+        if(_unsafeMode == false) {
+            switch(_mbManager.gameState()) {
+                case GameState::Unknown:
+                    errorMessage(error_prefix + "For security reasons, renaming the company is disabled if the game's status is unknown.");
+                    break;
+                case GameState::NotRunning:
+                    if(!_profileManager.currentProfile()->renameCompany(dialog.getName())) {
+                        errorMessage(error_prefix + _profileManager.currentProfile()->lastError());
+                    }
+                    else {
+                        _profileChoice->SetString(_profileChoice->GetCurrentSelection(),
+                                                  wxString::Format("%s%s",
+                                                                   _profileManager.currentProfile()->companyName(),
+                                                                   _profileManager.currentProfile()->type() == ProfileType::Demo ? " (Demo)" : ""));
+                    }
+                    break;
+                case GameState::Running:
+                    errorMessage(error_prefix + "Renaming the company is disabled while the game is running.");
+                    break;
+            }
+        }
+        else {
+            if(!_profileManager.currentProfile()->renameCompany(dialog.getName())) {
+                errorMessage(error_prefix + _profileManager.currentProfile()->lastError());
+            }
+            else {
+                _profileChoice->SetString(_profileChoice->GetCurrentSelection(),
+                                          wxString::Format("%s%s",
+                                                           _profileManager.currentProfile()->companyName(),
+                                                           _profileManager.currentProfile()->type() == ProfileType::Demo ? " (Demo)" : ""));
+            }
         }
     }
 }
@@ -238,18 +251,25 @@ void EvtMainFrame::importMassEvent(wxCommandEvent&) {
         return;
     }
 
-    switch(_mbManager.gameState()) {
-        case GameState::Unknown:
-            errorMessage(error_prefix + "For security reasons, importing is disabled if the game's status is unknown.");
-            break;
-        case GameState::NotRunning:
-            if(!_massManager->importMass(staged_selection, selected_hangar)) {
-                errorMessage(error_prefix + _massManager->lastError());
-            }
-            break;
-        case GameState::Running:
-            errorMessage(error_prefix + "Importing a M.A.S.S. is disabled while the game is running.");
-            break;
+    if(_unsafeMode == false) {
+        switch(_mbManager.gameState()) {
+            case GameState::Unknown:
+                errorMessage(error_prefix + "For security reasons, importing is disabled if the game's status is unknown.");
+                break;
+            case GameState::NotRunning:
+                if(!_massManager->importMass(staged_selection, selected_hangar)) {
+                    errorMessage(error_prefix + _massManager->lastError());
+                }
+                break;
+            case GameState::Running:
+                errorMessage(error_prefix + "Importing a M.A.S.S. is disabled while the game is running.");
+                break;
+        }
+    }
+    else {
+        if(!_massManager->importMass(staged_selection, selected_hangar)) {
+            errorMessage(error_prefix + _massManager->lastError());
+        }
     }
 }
 
@@ -279,18 +299,25 @@ void EvtMainFrame::moveMassEvent(wxCommandEvent&) {
         return;
     }
 
-    switch(_mbManager.gameState()) {
-        case GameState::Unknown:
-            errorMessage(error_prefix + "For security reasons, moving a M.A.S.S. is disabled if the game's status is unknown.");
-            break;
-        case GameState::NotRunning:
-            if(!_massManager->moveMass(source_slot, choice - 1)) {
-                errorMessage(error_prefix + _massManager->lastError());
-            }
-            break;
-        case GameState::Running:
-            errorMessage(error_prefix + "Moving a M.A.S.S. is disabled while the game is running.");
-            break;
+    if(_unsafeMode == false) {
+        switch(_mbManager.gameState()) {
+            case GameState::Unknown:
+                errorMessage(error_prefix + "For security reasons, moving a M.A.S.S. is disabled if the game's status is unknown.");
+                break;
+            case GameState::NotRunning:
+                if(!_massManager->moveMass(source_slot, choice - 1)) {
+                    errorMessage(error_prefix + _massManager->lastError());
+                }
+                break;
+            case GameState::Running:
+                errorMessage(error_prefix + "Moving a M.A.S.S. is disabled while the game is running.");
+                break;
+        }
+    }
+    else {
+        if(!_massManager->moveMass(source_slot, choice - 1)) {
+            errorMessage(error_prefix + _massManager->lastError());
+        }
     }
 }
 
@@ -302,18 +329,25 @@ void EvtMainFrame::deleteMassEvent(wxCommandEvent&) {
         return;
     }
 
-    switch(_mbManager.gameState()) {
-        case GameState::Unknown:
-            errorMessage(error_prefix + "For security reasons, deleting a M.A.S.S. is disabled if the game's status is unknown.");
-            break;
-        case GameState::NotRunning:
-            if(!_massManager->deleteMass(_installedListView->GetFirstSelected())) {
-                errorMessage(error_prefix + _massManager->lastError());
-            }
-            break;
-        case GameState::Running:
-            errorMessage(error_prefix + "Deleting a M.A.S.S. is disabled while the game is running.");
-            break;
+    if(_unsafeMode == false) {
+        switch(_mbManager.gameState()) {
+            case GameState::Unknown:
+                errorMessage(error_prefix + "For security reasons, deleting a M.A.S.S. is disabled if the game's status is unknown.");
+                break;
+            case GameState::NotRunning:
+                if(!_massManager->deleteMass(_installedListView->GetFirstSelected())) {
+                    errorMessage(error_prefix + _massManager->lastError());
+                }
+                break;
+            case GameState::Running:
+                errorMessage(error_prefix + "Deleting a M.A.S.S. is disabled while the game is running.");
+                break;
+        }
+    }
+    else {
+        if(!_massManager->deleteMass(_installedListView->GetFirstSelected())) {
+            errorMessage(error_prefix + _massManager->lastError());
+        }
     }
 }
 
@@ -325,18 +359,25 @@ void EvtMainFrame::renameMassEvent(wxCommandEvent&) {
     int result = dialog.ShowModal();
 
     if(result == wxID_OK) {
-        switch(_mbManager.gameState()) {
-            case GameState::Unknown:
-                errorMessage(error_prefix + "For security reasons, renaming a M.A.S.S. is disabled if the game's status is unknown.");
-                break;
-            case GameState::NotRunning:
-                if(!_massManager->renameMass(_installedListView->GetFirstSelected(), dialog.getName())) {
-                    errorMessage(error_prefix + _massManager->lastError());
-                }
-                break;
-            case GameState::Running:
-                errorMessage(error_prefix + "Renaming a M.A.S.S. is disabled while the game is running.");
-                break;
+        if(_unsafeMode == false) {
+            switch(_mbManager.gameState()) {
+                case GameState::Unknown:
+                    errorMessage(error_prefix + "For security reasons, renaming a M.A.S.S. is disabled if the game's status is unknown.");
+                    break;
+                case GameState::NotRunning:
+                    if(!_massManager->renameMass(_installedListView->GetFirstSelected(), dialog.getName())) {
+                        errorMessage(error_prefix + _massManager->lastError());
+                    }
+                    break;
+                case GameState::Running:
+                    errorMessage(error_prefix + "Renaming a M.A.S.S. is disabled while the game is running.");
+                    break;
+            }
+        }
+        else {
+            if(!_massManager->renameMass(_installedListView->GetFirstSelected(), dialog.getName())) {
+                errorMessage(error_prefix + _massManager->lastError());
+            }
         }
     }
 }
@@ -463,6 +504,25 @@ void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
 
 void EvtMainFrame::gameCheckTimerEvent(wxTimerEvent&) {
     isGameRunning();
+}
+
+void EvtMainFrame::unsafeCheckboxEvent(wxCommandEvent& event) {
+    if(event.IsChecked() == true) {
+        int confirmation = wxMessageBox("Are you sure you want to enable unsafe mode ?\n\n"
+                                        "Unsafe mode will allow you to perform changes even while the game is running, which can result in weird behaviour or even data corruption.",
+                                        "Question", wxYES_NO|wxCENTRE|wxICON_WARNING, this);
+        if(confirmation == wxYES) {
+            _unsafeMode = true;
+        }
+        else {
+            _unsafeCheckbox->SetValue(false);
+        }
+    }
+    else {
+        _unsafeMode = false;
+    }
+
+    updateCommandsState();
 }
 
 void EvtMainFrame::saveFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event) {
@@ -649,11 +709,11 @@ void EvtMainFrame::updateCommandsState() {
     GameState game_state = _mbManager.gameState();
     MassState mass_state = _massManager->massState(selection);
 
-    _importButton->Enable(selection != -1 && staged_selection != -1 && game_state == GameState::NotRunning);
+    _importButton->Enable(selection != -1 && staged_selection != -1 && (_unsafeMode == true || game_state == GameState::NotRunning));
     _exportButton->Enable(selection != -1);
-    _moveButton->Enable(selection != -1 && game_state == GameState::NotRunning && mass_state == MassState::Valid);
-    _deleteButton->Enable(selection != -1 && game_state == GameState::NotRunning && mass_state != MassState::Empty);
-    _renameButton->Enable(selection != -1 && game_state == GameState::NotRunning && mass_state == MassState::Valid);
+    _moveButton->Enable(selection != -1 && (_unsafeMode == true || game_state == GameState::NotRunning) && mass_state == MassState::Valid);
+    _deleteButton->Enable(selection != -1 && (_unsafeMode == true || game_state == GameState::NotRunning) && mass_state != MassState::Empty);
+    _renameButton->Enable(selection != -1 && (_unsafeMode == true || game_state == GameState::NotRunning) && mass_state == MassState::Valid);
     _deleteStagedButton->Enable(staged_selection != -1);
 
     long screenshot_selection = _screenshotsList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
