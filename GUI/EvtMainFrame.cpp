@@ -78,14 +78,23 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent):
         return;
     }
 
+    std::size_t default_profile = 0;
+    int counter = 0;
+
     for(const Profile& p : _profileManager.profiles()) {
         if(p.valid()) {
             _profileChoice->Append(wxString::Format("%s%s", p.companyName(), p.type() == ProfileType::Demo ? " (Demo)" : ""));
+
+            if(p.type() == ProfileType::FullGame && default_profile == 0) {
+                default_profile = counter;
+            }
+
+            counter++;
         }
     }
 
-    _profileManager.setProfile(0);
-    _profileChoice->SetSelection(0);
+    _profileManager.setProfile(default_profile);
+    _profileChoice->SetSelection(default_profile);
 
     _massManager.emplace(_profileManager.profileDirectory(),
                          _profileManager.currentProfile()->steamId(),
