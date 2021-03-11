@@ -92,7 +92,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_storyProgress->Wrap( -1 );
 	_storyProgress->SetToolTip( wxT("What this value does or corresponds to is unknown at this point in time. It is only listed here for the sake of completion.") );
 
-	fgSizerGeneralStats->Add( _storyProgress, 0, wxALL, 5 );
+	fgSizerGeneralStats->Add( _storyProgress, 0, wxALL|wxEXPAND, 5 );
 
 	_lastMissionIdLabel = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Last mission ID:"), wxDefaultPosition, wxDefaultSize, 0 );
 	_lastMissionIdLabel->Wrap( -1 );
@@ -104,7 +104,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_lastMissionId->Wrap( -1 );
 	_lastMissionId->SetToolTip( wxT("This corresponds to the last mission menu selection, not the last mission played.\nIf you see just a number instead of the mission name, please report it to the creator of this application.") );
 
-	fgSizerGeneralStats->Add( _lastMissionId, 0, wxALL, 5 );
+	fgSizerGeneralStats->Add( _lastMissionId, 0, wxALL|wxEXPAND, 5 );
 
 
 	sbSizerGeneralInfo->Add( fgSizerGeneralStats, 1, wxEXPAND, 5 );
