@@ -37,6 +37,7 @@
 #include "EvtMainFrame.h"
 
 static const std::map<std::int32_t, const char*> mission_id_map {{
+    // Story missions
     {25600, "Mission 1 - Training"},
     {25856, "Mission 2 - Patrol Operation"},
     {26112, "Mission 3 - Fusion Cells in the Snow"},
@@ -50,10 +51,17 @@ static const std::map<std::int32_t, const char*> mission_id_map {{
     {28160, "Mission 11 - Tempestuous Sector"},
     {28416, "Mission 12 - Clashes of Metal"},
     {28672, "Mission 13 - The Sandstorm Glutton"},
-    {51200, "Hunting Ground 1 - Desert Pathway Safety"},
-    {51456, "Hunting Ground 2 - Snowfield Custodian"},
-    {51712, "Hunting Ground 3 - Abandoned Valley Raid"},
-    {51968, "Hunting Ground 4 - Depths of the Machineries"},
+
+    // Hunting grounds
+    {51200, "Hunt 1 - Desert Pathway Safety"},
+    {51456, "Hunt 2 - Snowfield Custodian"},
+    {51712, "Hunt 3 - Abandoned Valley Raid"},
+    {51968, "Hunt 4 - Depths of the Machineries"},
+
+    // Challenges
+    {76800,  "Challenge 1 - Redline Battlefront"},
+    {81920,  "Challenge 2 - Void Convergence"},
+    {102400, "Challenge 3 - Gates of Ascension"}
 }};
 
 EvtMainFrame::EvtMainFrame(wxWindow* parent):
