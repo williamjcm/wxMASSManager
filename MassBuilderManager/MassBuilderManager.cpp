@@ -23,6 +23,7 @@
 #include <shlobj.h>
 #include <wtsapi32.h>
 
+#include <Corrade/Containers/ScopeGuard.h>
 #include <Corrade/Utility/Directory.h>
 #include <Corrade/Utility/Unicode.h>
 
@@ -52,6 +53,8 @@ auto MassBuilderManager::checkGameState() -> GameState {
     _gameState = GameState::Unknown;
 
     if(WTSEnumerateProcessesW(WTS_CURRENT_SERVER_HANDLE, 0, 1, &process_infos, &process_count)) {
+        Containers::ScopeGuard guard{process_infos, WTSFreeMemory};
+
         for(unsigned long i = 0; i < process_count; ++i) {
             if(std::wcscmp(process_infos[i].pProcessName, L"MASS_Builder-Win64-Shipping.exe") == 0) {
                 _gameState = GameState::Running;
@@ -61,11 +64,6 @@ auto MassBuilderManager::checkGameState() -> GameState {
                 _gameState = GameState::NotRunning;
             }
         }
-    }
-
-    if(process_infos != nullptr) {
-        WTSFreeMemory(process_infos);
-        process_infos = nullptr;
     }
 
     return _gameState;
