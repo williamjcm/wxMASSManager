@@ -51,6 +51,7 @@ add_executable(wxMASSManager WIN32
     GUI/NameChangeDialog.cpp
     GUI/EvtNameChangeDialog.h
     GUI/EvtNameChangeDialog.cpp
+    Maps/LastMissionId.h
     Mass/Mass.h
     Mass/Mass.cpp
     MassBuilderManager/MassBuilderManager.h
