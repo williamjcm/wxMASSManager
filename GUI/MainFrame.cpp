@@ -84,13 +84,13 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	_storyProgressLabel = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Story progress:"), wxDefaultPosition, wxDefaultSize, 0 );
 	_storyProgressLabel->Wrap( -1 );
-	_storyProgressLabel->SetToolTip( wxT("What this value does or corresponds to is unknown at this point in time. It is only listed here for the sake of completion.") );
+	_storyProgressLabel->SetToolTip( wxT("The current point in the story.") );
 
 	fgSizerGeneralStats->Add( _storyProgressLabel, 0, wxALL, 5 );
 
 	_storyProgress = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, 0 );
 	_storyProgress->Wrap( -1 );
-	_storyProgress->SetToolTip( wxT("What this value does or corresponds to is unknown at this point in time. It is only listed here for the sake of completion.") );
+	_storyProgress->SetToolTip( wxT("The current point in the story.") );
 
 	fgSizerGeneralStats->Add( _storyProgress, 0, wxALL|wxEXPAND, 5 );
 

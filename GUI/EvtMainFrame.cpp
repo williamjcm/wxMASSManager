@@ -37,6 +37,7 @@
 #include "EvtMainFrame.h"
 
 #include "../Maps/LastMissionId.h"
+#include "../Maps/StoryProgress.h"
 
 EvtMainFrame::EvtMainFrame(wxWindow* parent):
     MainFrame(parent),
@@ -621,7 +622,7 @@ void EvtMainFrame::updateProfileStats() {
     Profile* current_profile = _profileManager.currentProfile();
     _companyName->SetLabel(current_profile->getCompanyName());
     _credits->SetLabel(wxString::Format("%i", current_profile->getCredits()));
-    _storyProgress->SetLabel(wxString::Format("%i", current_profile->getStoryProgress()));
+    _storyProgress->SetLabel(wxString::Format("%s", story_progress_map.find(current_profile->getStoryProgress()) != story_progress_map.end() ? story_progress_map.at(current_profile->storyProgress()) : std::to_string(current_profile->storyProgress())));
     _lastMissionId->SetLabel(wxString::Format("%s", mission_id_map.find(current_profile->getLastMissionId()) != mission_id_map.end() ? mission_id_map.at(current_profile->lastMissionId()) : std::to_string(current_profile->lastMissionId())));
 }
 
