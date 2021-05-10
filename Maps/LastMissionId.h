@@ -22,28 +22,28 @@
 
 static const std::map<std::int32_t, const char*> mission_id_map {{
     // Story missions
-    {25600, "Mission 1 - Training"},
-    {25856, "Mission 2 - Patrol Operation"},
-    {26112, "Mission 3 - Fusion Cells in the Snow"},
-    {26368, "Mission 4 - Earning Changes"},
-    {26624, "Mission 5 - Unexpected Coordination"},
-    {26880, "Mission 6 - Empowering Void"},
-    {27136, "Mission 7 - Logisitics Obstacles"},
-    {27392, "Mission 8 - Wrath of the Wastelands"},
-    {27648, "Mission 9 - Suspicious Originator"},
-    {27904, "Mission 10 - Researchers Data Recovery"},
-    {28160, "Mission 11 - Tempestuous Sector"},
-    {28416, "Mission 12 - Clashes of Metal"},
-    {28672, "Mission 13 - The Sandstorm Glutton"},
+    {0x64, "Mission 1 - Training"},
+    {0x65, "Mission 2 - Patrol Operation"},
+    {0x66, "Mission 3 - Fusion Cells in the Snow"},
+    {0x67, "Mission 4 - Earning Changes"},
+    {0x68, "Mission 5 - Unexpected Coordination"},
+    {0x69, "Mission 6 - Empowering Void"},
+    {0x6A, "Mission 7 - Logisitics Obstacles"},
+    {0x6B, "Mission 8 - Wrath of the Wastelands"},
+    {0x6C, "Mission 9 - Suspicious Originator"},
+    {0x6D, "Mission 10 - Researchers Data Recovery"},
+    {0x6E, "Mission 11 - Tempestuous Sector"},
+    {0x6F, "Mission 12 - Clashes of Metal"},
+    {0x70, "Mission 13 - The Sandstorm Glutton"},
 
     // Hunting grounds
-    {51200, "Hunt 1 - Desert Pathway Safety"},
-    {51456, "Hunt 2 - Snowfield Custodian"},
-    {51712, "Hunt 3 - Abandoned Valley Raid"},
-    {51968, "Hunt 4 - Depths of the Machineries"},
+    {0xC8, "Hunt 1 - Desert Pathway Safety"},
+    {0xC9, "Hunt 2 - Snowfield Custodian"},
+    {0xCA, "Hunt 3 - Abandoned Valley Raid"},
+    {0xCB, "Hunt 4 - Depths of the Machineries"},
 
     // Challenges
-    {76800,  "Challenge 1 - Redline Battlefront"},
-    {81920,  "Challenge 2 - Void Convergence"},
-    {102400, "Challenge 3 - Gates of Ascension"}
+    {0x12C, "Challenge 1 - Redline Battlefront"},
+    {0x140, "Challenge 2 - Void Convergence"},
+    {0x190, "Challenge 3 - Gates of Ascension"}
 }};

@@ -620,9 +620,23 @@ void EvtMainFrame::screenshotFileEventHandler(int event_type, const wxString& ev
 void EvtMainFrame::updateProfileStats() {
     Profile* current_profile = _profileManager.currentProfile();
     _companyName->SetLabel(current_profile->getCompanyName());
+
+
     _credits->SetLabel(wxString::Format("%i", current_profile->getCredits()));
-    _storyProgress->SetLabel(wxString::Format("%s", story_progress_map.find(current_profile->getStoryProgress()) != story_progress_map.end() ? story_progress_map.at(current_profile->storyProgress()) : std::to_string(current_profile->storyProgress())));
-    _lastMissionId->SetLabel(wxString::Format("%s", mission_id_map.find(current_profile->getLastMissionId()) != mission_id_map.end() ? mission_id_map.at(current_profile->lastMissionId()) : std::to_string(current_profile->lastMissionId())));
+
+    if(story_progress_map.find(current_profile->getStoryProgress()) != story_progress_map.end()) {
+        _storyProgress->SetLabel(story_progress_map.at(current_profile->storyProgress()));
+    }
+    else {
+        _storyProgress->SetLabel(wxString::Format("0x%X", current_profile->storyProgress()));
+    }
+
+    if(mission_id_map.find(current_profile->getLastMissionId()) != mission_id_map.end()) {
+        _lastMissionId->SetLabel(mission_id_map.at(current_profile->lastMissionId()));
+    }
+    else {
+        _lastMissionId->SetLabel(wxString::Format("0x%X", current_profile->lastMissionId()));
+    }
 }
 
 void EvtMainFrame::initialiseListView() {

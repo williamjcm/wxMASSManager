@@ -201,7 +201,7 @@ auto Profile::getStoryProgress() -> std::int32_t {
     auto iter = std::search(mmap.begin(), mmap.end(), &story_progress_locator[0], &story_progress_locator[29]);
 
     if(iter != mmap.end()) {
-        _storyProgress = *reinterpret_cast<const std::int32_t*>(iter + 0x26);
+        _storyProgress = *reinterpret_cast<const std::int32_t*>(iter + 0x27);
     }
     else{
         _lastError = "The profile save seems to be corrupted or the game didn't release the handle on the file.";
@@ -221,7 +221,7 @@ auto Profile::getLastMissionId() -> std::int32_t {
     auto iter = std::search(mmap.begin(), mmap.end(), &last_mission_id_locator[0], &last_mission_id_locator[29]);
 
     if(iter != mmap.end()) {
-        _lastMissionId = *reinterpret_cast<const std::int32_t*>(iter + 0x26);
+        _lastMissionId = *reinterpret_cast<const std::int32_t*>(iter + 0x27);
     }
     else{
         _lastError = "The profile save seems to be corrupted or the game didn't release the handle on the file.";
