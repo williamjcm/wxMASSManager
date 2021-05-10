@@ -46,8 +46,7 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent):
     SetIcon(wxIcon("MAINICON"));
 
     warningMessage(wxString::FromUTF8("Before you start using this app, a few things you should know:\n\n"
-                                      "This is a pre-release version of the application, and as a result, was not as tested as a version considered stable. Please make frequent backups when using it!\n\n"
-                                      "For this application to work properly, Steam Cloud syncing needs to be disabled for the game.\nTo disable it, right-click the game in your Steam library, click \"Properties\", go to the \"General\" tab, and uncheck \"Keep game saves in the Steam Cloud for M.A.S.S. Builder\".\n\n"
+                                      "For this application to work properly, it is recommended to disable Steam Cloud syncing for the game.\nTo disable it, right-click the game in your Steam library, click \"Properties\", go to the \"General\" tab, and uncheck \"Keep game saves in the Steam Cloud for M.A.S.S. Builder\".\n\n"
                                       "DISCLAIMER: The developer of this application (Guillaume Jacquemin) isn't associated with Vermillion Digital, and both parties cannot be held responsible for data loss or corruption this app might cause. PLEASE USE AT YOUR OWN RISK!\n\n"
                                       "Last but not least, this application is released under the terms of the GNU General Public Licence version 3. Please see the COPYING file for more details."));
 
