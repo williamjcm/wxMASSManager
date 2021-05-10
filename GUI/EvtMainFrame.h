@@ -28,7 +28,6 @@
 #include "../MassBuilderManager/MassBuilderManager.h"
 #include "../Profile/Profile.h"
 #include "../ProfileManager/ProfileManager.h"
-#include "../ScreenshotManager/ScreenshotManager.h"
 
 #include "MainFrame.h"
 
@@ -61,18 +60,9 @@ class EvtMainFrame: public MainFrame {
         void listColumnDragEvent(wxListEvent&);
 
         // Screenshot-related events
-        void screenshotListSelectionEvent(wxListEvent&);
-        void screenshotFilenameSortingEvent(wxCommandEvent&);
-        void screenshotCreationDateSortingEvent(wxCommandEvent&);
-        void screenshotAscendingSortingEvent(wxCommandEvent&);
-        void screenshotDescendingSortingEvent(wxCommandEvent&);
-        void viewScreenshotEvent(wxCommandEvent&);
-        void viewScreenshotEvent(wxListEvent&);
-        void deleteScreenshotEvent(wxCommandEvent&);
         void openScreenshotDirEvent(wxCommandEvent&);
 
         // General events
-        void tabChangeEvent(wxNotebookEvent& event);
         void fileUpdateEvent(wxFileSystemWatcherEvent& event);
         void gameCheckTimerEvent(wxTimerEvent&);
         void unsafeCheckboxEvent(wxCommandEvent& event);
@@ -80,7 +70,6 @@ class EvtMainFrame: public MainFrame {
     private:
         void saveFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
         void stagingFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
-        void screenshotFileEventHandler(int event_type, const wxString& event_file);
 
         void updateProfileStats();
 
@@ -91,9 +80,6 @@ class EvtMainFrame: public MainFrame {
         void updateCommandsState();
         void refreshHangar(int slot);
 
-        void updateScreenshotList();
-        void viewScreenshot();
-
         void infoMessage(const wxString& message);
         void warningMessage(const wxString& message);
         void errorMessage(const wxString& message);
@@ -103,12 +89,9 @@ class EvtMainFrame: public MainFrame {
         MassBuilderManager _mbManager;
         ProfileManager _profileManager;
         Containers::Pointer<MassManager> _massManager;
-        Containers::Pointer<ScreenshotManager> _screenshotManager;
 
         wxFileSystemWatcher _watcher;
         int _lastWatcherEventType = 0;
-
-        wxImageList _screenshotThumbs{160, 160, true, 0};
 };
 
 #endif // __EvtMainFrame__

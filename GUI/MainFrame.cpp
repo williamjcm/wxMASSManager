@@ -37,6 +37,9 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_backupSelectedButton = new wxButton( _mainPanel, wxID_ANY, wxT("Backup selected profile"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizerProfile->Add( _backupSelectedButton, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
 
+	_openScreenshotDirButton = new wxButton( _mainPanel, wxID_ANY, wxT("Open screenshots folder"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizerProfile->Add( _openScreenshotDirButton, 0, wxALL, 5 );
+
 
 	bSizerProfile->Add( 0, 0, 1, wxEXPAND, 5 );
 
@@ -193,65 +196,6 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_massPanel->Layout();
 	bSizerMassPanel->Fit( _massPanel );
 	_managerNotebook->AddPage( _massPanel, wxT("M.A.S.S.es"), false );
-	_screenshotsPanel = new wxPanel( _managerNotebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-	wxBoxSizer* bSizerScreenshotsPanel;
-	bSizerScreenshotsPanel = new wxBoxSizer( wxHORIZONTAL );
-
-	_screenshotsList = new wxListCtrl( _screenshotsPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_ALIGN_TOP|wxLC_AUTOARRANGE|wxLC_ICON|wxLC_SINGLE_SEL );
-	bSizerScreenshotsPanel->Add( _screenshotsList, 1, wxALL|wxEXPAND, 5 );
-
-	wxBoxSizer* bSizerScreenshotCommands;
-	bSizerScreenshotCommands = new wxBoxSizer( wxVERTICAL );
-
-	wxStaticBoxSizer* sbSizerSorting;
-	sbSizerSorting = new wxStaticBoxSizer( new wxStaticBox( _screenshotsPanel, wxID_ANY, wxT("Sorting") ), wxVERTICAL );
-
-	wxBoxSizer* bSizerSortType;
-	bSizerSortType = new wxBoxSizer( wxHORIZONTAL );
-
-	_nameRadio = new wxRadioButton( sbSizerSorting->GetStaticBox(), wxID_ANY, wxT("Filename"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
-	_nameRadio->SetValue( true );
-	bSizerSortType->Add( _nameRadio, 1, wxALL, 5 );
-
-	_creationDateRadio = new wxRadioButton( sbSizerSorting->GetStaticBox(), wxID_ANY, wxT("Creation date"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizerSortType->Add( _creationDateRadio, 1, wxALL, 5 );
-
-
-	sbSizerSorting->Add( bSizerSortType, 1, wxEXPAND, 5 );
-
-	wxBoxSizer* bSizerSortOrder;
-	bSizerSortOrder = new wxBoxSizer( wxHORIZONTAL );
-
-	_ascendingRadio = new wxRadioButton( sbSizerSorting->GetStaticBox(), wxID_ANY, wxT("Ascending"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
-	_ascendingRadio->SetValue( true );
-	bSizerSortOrder->Add( _ascendingRadio, 1, wxALL, 5 );
-
-	_descendingRadio = new wxRadioButton( sbSizerSorting->GetStaticBox(), wxID_ANY, wxT("Descending"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizerSortOrder->Add( _descendingRadio, 1, wxALL, 5 );
-
-
-	sbSizerSorting->Add( bSizerSortOrder, 1, wxEXPAND, 5 );
-
-
-	bSizerScreenshotCommands->Add( sbSizerSorting, 0, wxEXPAND|wxALL, 5 );
-
-	_viewScreenshotButton = new wxButton( _screenshotsPanel, wxID_ANY, wxT("View"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizerScreenshotCommands->Add( _viewScreenshotButton, 0, wxALL|wxEXPAND, 5 );
-
-	_deleteScreenshotButton = new wxButton( _screenshotsPanel, wxID_ANY, wxT("Delete"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizerScreenshotCommands->Add( _deleteScreenshotButton, 0, wxALL|wxEXPAND, 5 );
-
-	_screenshotDirButton = new wxButton( _screenshotsPanel, wxID_ANY, wxT("Open directory"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizerScreenshotCommands->Add( _screenshotDirButton, 0, wxALL|wxEXPAND, 5 );
-
-
-	bSizerScreenshotsPanel->Add( bSizerScreenshotCommands, 0, wxEXPAND, 5 );
-
-
-	_screenshotsPanel->SetSizer( bSizerScreenshotsPanel );
-	_screenshotsPanel->Layout();
-	bSizerScreenshotsPanel->Fit( _screenshotsPanel );
-	_managerNotebook->AddPage( _screenshotsPanel, wxT("Photo mode shots"), false );
 
 	bSizerMainPanel->Add( _managerNotebook, 1, wxEXPAND, 5 );
 
@@ -303,8 +247,8 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	// Connect Events
 	_profileChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( MainFrame::profileSelectionEvent ), NULL, this );
 	_backupSelectedButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSelectedProfileEvent ), NULL, this );
+	_openScreenshotDirButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openScreenshotDirEvent ), NULL, this );
 	_unsafeCheckbox->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
-	_managerNotebook->Connect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( MainFrame::tabChangeEvent ), NULL, this );
 	_companyName->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( MainFrame::companyRenameEvent ), NULL, this );
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
@@ -315,16 +259,6 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_stagingList->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( MainFrame::stagingSelectionEvent ), NULL, this );
 	_deleteStagedButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteStagedEvent ), NULL, this );
 	_stagingAreaButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openStagingDirEvent ), NULL, this );
-	_screenshotsList->Connect( wxEVT_COMMAND_LIST_ITEM_ACTIVATED, wxListEventHandler( MainFrame::viewScreenshotEvent ), NULL, this );
-	_screenshotsList->Connect( wxEVT_COMMAND_LIST_ITEM_DESELECTED, wxListEventHandler( MainFrame::screenshotListSelectionEvent ), NULL, this );
-	_screenshotsList->Connect( wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler( MainFrame::screenshotListSelectionEvent ), NULL, this );
-	_nameRadio->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( MainFrame::screenshotFilenameSortingEvent ), NULL, this );
-	_creationDateRadio->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( MainFrame::screenshotCreationDateSortingEvent ), NULL, this );
-	_ascendingRadio->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( MainFrame::screenshotAscendingSortingEvent ), NULL, this );
-	_descendingRadio->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( MainFrame::screenshotDescendingSortingEvent ), NULL, this );
-	_viewScreenshotButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::viewScreenshotEvent ), NULL, this );
-	_deleteScreenshotButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteScreenshotEvent ), NULL, this );
-	_screenshotDirButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openScreenshotDirEvent ), NULL, this );
 	this->Connect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( MainFrame::gameCheckTimerEvent ) );
 }
 
@@ -333,8 +267,8 @@ MainFrame::~MainFrame()
 	// Disconnect Events
 	_profileChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( MainFrame::profileSelectionEvent ), NULL, this );
 	_backupSelectedButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSelectedProfileEvent ), NULL, this );
+	_openScreenshotDirButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openScreenshotDirEvent ), NULL, this );
 	_unsafeCheckbox->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
-	_managerNotebook->Disconnect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( MainFrame::tabChangeEvent ), NULL, this );
 	_companyName->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( MainFrame::companyRenameEvent ), NULL, this );
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
@@ -345,16 +279,6 @@ MainFrame::~MainFrame()
 	_stagingList->Disconnect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( MainFrame::stagingSelectionEvent ), NULL, this );
 	_deleteStagedButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteStagedEvent ), NULL, this );
 	_stagingAreaButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openStagingDirEvent ), NULL, this );
-	_screenshotsList->Disconnect( wxEVT_COMMAND_LIST_ITEM_ACTIVATED, wxListEventHandler( MainFrame::viewScreenshotEvent ), NULL, this );
-	_screenshotsList->Disconnect( wxEVT_COMMAND_LIST_ITEM_DESELECTED, wxListEventHandler( MainFrame::screenshotListSelectionEvent ), NULL, this );
-	_screenshotsList->Disconnect( wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler( MainFrame::screenshotListSelectionEvent ), NULL, this );
-	_nameRadio->Disconnect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( MainFrame::screenshotFilenameSortingEvent ), NULL, this );
-	_creationDateRadio->Disconnect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( MainFrame::screenshotCreationDateSortingEvent ), NULL, this );
-	_ascendingRadio->Disconnect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( MainFrame::screenshotAscendingSortingEvent ), NULL, this );
-	_descendingRadio->Disconnect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( MainFrame::screenshotDescendingSortingEvent ), NULL, this );
-	_viewScreenshotButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::viewScreenshotEvent ), NULL, this );
-	_deleteScreenshotButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteScreenshotEvent ), NULL, this );
-	_screenshotDirButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openScreenshotDirEvent ), NULL, this );
 	this->Disconnect( wxID_ANY, wxEVT_TIMER, wxTimerEventHandler( MainFrame::gameCheckTimerEvent ) );
 
 }

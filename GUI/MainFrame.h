@@ -26,7 +26,6 @@
 #include <wx/panel.h>
 #include <wx/listctrl.h>
 #include <wx/listbox.h>
-#include <wx/radiobut.h>
 #include <wx/notebook.h>
 #include <wx/hyperlink.h>
 #include <wx/timer.h>
@@ -47,6 +46,7 @@ class MainFrame : public wxFrame
 		wxStaticText* _profileLabel;
 		wxChoice* _profileChoice;
 		wxButton* _backupSelectedButton;
+		wxButton* _openScreenshotDirButton;
 		wxCheckBox* _unsafeCheckbox;
 		wxNotebook* _managerNotebook;
 		wxPanel* _profilePanel;
@@ -69,15 +69,6 @@ class MainFrame : public wxFrame
 		wxListBox* _stagingList;
 		wxButton* _deleteStagedButton;
 		wxButton* _stagingAreaButton;
-		wxPanel* _screenshotsPanel;
-		wxListCtrl* _screenshotsList;
-		wxRadioButton* _nameRadio;
-		wxRadioButton* _creationDateRadio;
-		wxRadioButton* _ascendingRadio;
-		wxRadioButton* _descendingRadio;
-		wxButton* _viewScreenshotButton;
-		wxButton* _deleteScreenshotButton;
-		wxButton* _screenshotDirButton;
 		wxStaticText* _riskLabel;
 		wxStaticText* _gameStatusLabel;
 		wxStaticText* _gameStatus;
@@ -88,8 +79,8 @@ class MainFrame : public wxFrame
 		// Virtual event handlers, overide them in your derived class
 		virtual void profileSelectionEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void backupSelectedProfileEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void openScreenshotDirEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void unsafeCheckboxEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void tabChangeEvent( wxNotebookEvent& event ) { event.Skip(); }
 		virtual void companyRenameEvent( wxMouseEvent& event ) { event.Skip(); }
 		virtual void moveMassEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void deleteMassEvent( wxCommandEvent& event ) { event.Skip(); }
@@ -100,15 +91,6 @@ class MainFrame : public wxFrame
 		virtual void stagingSelectionEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void deleteStagedEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void openStagingDirEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void viewScreenshotEvent( wxListEvent& event ) { event.Skip(); }
-		virtual void screenshotListSelectionEvent( wxListEvent& event ) { event.Skip(); }
-		virtual void screenshotFilenameSortingEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void screenshotCreationDateSortingEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void screenshotAscendingSortingEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void screenshotDescendingSortingEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void viewScreenshotEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void deleteScreenshotEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void openScreenshotDirEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void gameCheckTimerEvent( wxTimerEvent& event ) { event.Skip(); }
 
 

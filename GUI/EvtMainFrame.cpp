@@ -107,8 +107,6 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent):
                      wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, "*.sav");
 
     _gameCheckTimer.Start(2000);
-
-    _screenshotsList->SetImageList(&_screenshotThumbs, wxIMAGE_LIST_NORMAL);
 }
 
 EvtMainFrame::~EvtMainFrame() {
@@ -397,63 +395,8 @@ void EvtMainFrame::listColumnDragEvent(wxListEvent& event) {
     event.Veto();
 }
 
-void EvtMainFrame::screenshotListSelectionEvent(wxListEvent&) {
-    updateCommandsState();
-}
-
-void EvtMainFrame::screenshotFilenameSortingEvent(wxCommandEvent&) {
-    _screenshotManager->sortScreenshots(SortType::Filename);
-    updateScreenshotList();
-}
-
-void EvtMainFrame::screenshotCreationDateSortingEvent(wxCommandEvent&) {
-    _screenshotManager->sortScreenshots(SortType::CreationDate);
-    updateScreenshotList();
-}
-
-void EvtMainFrame::screenshotAscendingSortingEvent(wxCommandEvent&) {
-    _screenshotManager->sortScreenshots(SortOrder::Ascending);
-    updateScreenshotList();
-}
-
-void EvtMainFrame::screenshotDescendingSortingEvent(wxCommandEvent&) {
-    _screenshotManager->sortScreenshots(SortOrder::Descending);
-    updateScreenshotList();
-}
-
-void EvtMainFrame::viewScreenshotEvent(wxCommandEvent&) {
-    viewScreenshot();
-}
-
-void EvtMainFrame::viewScreenshotEvent(wxListEvent&) {
-    viewScreenshot();
-}
-
-void EvtMainFrame::deleteScreenshotEvent(wxCommandEvent&) {
-    if(wxMessageBox("Are you sure you want to delete the selected screenshot ? This operation cannot be undone.",
-                    "Are you sure ?", wxYES_NO|wxCENTRE|wxICON_QUESTION, this) == wxNO) {
-        return;
-    }
-
-    long selection = _screenshotsList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-
-    if(selection != -1) {
-        _screenshotManager->deleteScreenshot(selection);
-    }
-}
-
 void EvtMainFrame::openScreenshotDirEvent(wxCommandEvent&) {
-    wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(_screenshotManager->screenshotDirectory()));
-}
-
-void EvtMainFrame::tabChangeEvent(wxNotebookEvent& event) {
-    if(event.GetSelection() == 2 && !_screenshotManager) {
-        wxBusyInfo busy{"Loading screenshots...", this};
-        _screenshotManager.emplace(_mbManager.saveDirectory());
-        _watcher.AddTree(wxFileName(Utility::Directory::toNativeSeparators(_screenshotManager->screenshotDirectory()), wxPATH_WIN),
-                         wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE, "*.png"); // Not monitoring MODIFY or RENAME, because they're a massive pain to handle. Ugh.
-        updateScreenshotList();
-    }
+    wxExecute("explorer.exe " + Utility::Directory::toNativeSeparators(Utility::Directory::join(_profileManager.profileDirectory(), "../Screenshots/WindowsNoEditor")));
 }
 
 void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
@@ -474,9 +417,6 @@ void EvtMainFrame::fileUpdateEvent(wxFileSystemWatcherEvent& event) {
     }
     else if(_massManager && event_path == Utility::Directory::toNativeSeparators(_massManager->stagingAreaDirectory())) {
         stagingFileEventHandler(event_type, event_file, event);
-    }
-    else if(_screenshotManager && event_path == Utility::Directory::toNativeSeparators(_screenshotManager->screenshotDirectory())) {
-        screenshotFileEventHandler(event_type, event_file);
     }
 
     _lastWatcherEventType = event_type;
@@ -599,24 +539,6 @@ void EvtMainFrame::stagingFileEventHandler(int event_type, const wxString& event
     }
 }
 
-void EvtMainFrame::screenshotFileEventHandler(int event_type, const wxString& event_file) {
-    int index = -1;
-
-    switch(event_type) {
-        case wxFSW_EVENT_CREATE:
-            _screenshotManager->updateScreenshot(event_file.ToUTF8().data());
-            updateScreenshotList();
-            break;
-        case wxFSW_EVENT_DELETE:
-            index = _screenshotsList->FindItem(-1, event_file, true);
-            if(index != -1) {
-                _screenshotManager->removeScreenshot(index);
-                _screenshotsList->DeleteItem(index);
-            }
-            break;
-    }
-}
-
 void EvtMainFrame::updateProfileStats() {
     Profile* current_profile = _profileManager.currentProfile();
     _companyName->SetLabel(current_profile->getCompanyName());
@@ -711,10 +633,6 @@ void EvtMainFrame::updateCommandsState() {
     _deleteButton->Enable(selection != -1 && (_unsafeMode == true || game_state == GameState::NotRunning) && mass_state != MassState::Empty);
     _renameButton->Enable(selection != -1 && (_unsafeMode == true || game_state == GameState::NotRunning) && mass_state == MassState::Valid);
     _deleteStagedButton->Enable(staged_selection != -1);
-
-    long screenshot_selection = _screenshotsList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-    _viewScreenshotButton->Enable(screenshot_selection != -1);
-    _deleteScreenshotButton->Enable(screenshot_selection != -1);
 }
 
 void EvtMainFrame::refreshHangar(int slot) {
@@ -735,53 +653,6 @@ void EvtMainFrame::refreshHangar(int slot) {
             _installedListView->SetItem(slot, 1, _massManager->massName(slot));
             break;
     }
-}
-
-void EvtMainFrame::updateScreenshotList() {
-    _screenshotsList->DeleteAllItems();
-    _screenshotThumbs.RemoveAll();
-
-    int index = 0;
-    for(const Screenshot& s : _screenshotManager->screenshots()) {
-        _screenshotsList->InsertItem(index,
-                                     wxString::Format("%s\n%s", wxString::FromUTF8(s._filename.c_str()), s._creationDate.Format("%d/%m/%Y %H:%M:%S")),
-                                     _screenshotThumbs.Add(s._thumbnail));
-
-        ++index;
-    }
-}
-
-void EvtMainFrame::viewScreenshot() {
-    long selection = _screenshotsList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-    if(selection == -1) {
-        return;
-    }
-
-    wxBitmap image(Utility::Directory::toNativeSeparators(Utility::Directory::join(_screenshotManager->screenshotDirectory(),
-                                                                                   _screenshotManager->screenshots().at(selection)._filename)), wxBITMAP_TYPE_PNG);
-
-    wxDialog view_dialog;
-    view_dialog.Create(this, wxID_ANY, "Screenshot viewer", wxDefaultPosition, wxSize{1024, 576}, wxCAPTION|wxCLOSE_BOX|wxMAXIMIZE_BOX|wxMINIMIZE_BOX|wxRESIZE_BORDER|wxSYSTEM_MENU);
-
-    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    wxScrolledWindow* scroller = new wxScrolledWindow(&view_dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL|wxHSCROLL);
-    scroller->SetScrollRate(5, 5);
-
-    wxBoxSizer* scroller_sizer = new wxBoxSizer(wxVERTICAL);
-    wxStaticBitmap* screenshot = new wxStaticBitmap(scroller, wxID_ANY, image);
-    scroller_sizer->Add(screenshot, 1, wxEXPAND, 5);
-
-    scroller->SetSizer(scroller_sizer);
-    scroller->Layout();
-    scroller_sizer->FitInside(scroller);
-    sizer->Add(scroller, 1, wxEXPAND, 5);
-
-    view_dialog.SetSizer(sizer);
-    view_dialog.Layout();
-    sizer->FitInside(&view_dialog);
-    view_dialog.Centre();
-
-    view_dialog.ShowModal();
 }
 
 void EvtMainFrame::infoMessage(const wxString& message) {
