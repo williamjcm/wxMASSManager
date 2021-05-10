@@ -69,5 +69,27 @@ static const std::map<std::int32_t, const char*> story_progress_map {{
     {231168, "Chapter 1 - After mission 8, talked with Reina, Nier, and Quin in development section"},
 
     {231424, "Chapter 2 start"},
-    {231680, "Chapter 2 - got mission 9 briefing"},
+    {231680, "Chapter 2 - Got mission 9 briefing"},
+
+    {256000, "Chapter 2 - After mission 9, talking with Reina in hangar"},
+    {256256, "Chapter 2 - After mission 9, returned to hangar"},
+    {256512, "Chapter 2 - After mission 9, talked with crew in armour section"},
+    {256768, "Chapter 2 - After mission 9, got mission 10 briefing"},
+
+    {281600, "Chapter 2 - After mission 10, talking with Reina in hangar"},
+    {281856, "Chapter 2 - After mission 10, returned to hangar"},
+    {282112, "Chapter 2 - After mission 10, got mission 11 briefing"},
+
+    {307200, "Chapter 2 - After mission 11, talking with Reina and Nier in hangar"},
+    {307456, "Chapter 2 - After mission 11, returned to hangar"},
+    {307712, "Chapter 2 - After mission 11, got mission 12 briefing"},
+
+    {332800, "Chapter 2 - After mission 12, talking with Reina and Waltz in hangar"},
+    {333056, "Chapter 2 - After mission 12, returned to hangar"},
+    {333312, "Chapter 2 - After mission 12, got hunt 4 and mission 13 briefing"},
+
+    {358400, "Chapter 2 - After mission 13, talking with Reina in hangar"},
+    {358656, "Chapter 2 - After mission 13, returned to hangar"},
+    {358912, "Chapter 2 - After mission 13, talked with Reina in development section"},
+    {359168, "Chapter 2 - After mission 13, got briefing for challenges 1, 2, and 3"},
 }};
