@@ -21,7 +21,8 @@
 #include <map>
 
 static const std::map<std::int32_t, const char*> story_progress_map {{
-    {0x64, "Chapter 1 start"},
+    {0x00, "Chapter 1 start - Company isn't named yet"},
+    {0x64, "Chapter 1 - First time in the hangar"},
     {0x65, "Chapter 1 - After 1st meeting with Quin in mission section"},
 
     {0x66, "Chapter 1 - After training, talking with Reina and Quin in hangar"},
