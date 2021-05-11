@@ -59,6 +59,7 @@ add_executable(wxMASSManager WIN32
     MassBuilderManager/MassBuilderManager.cpp
     MassManager/MassManager.h
     MassManager/MassManager.cpp
+    Profile/Locators.h
     Profile/Profile.h
     Profile/Profile.cpp
     ProfileManager/ProfileManager.h

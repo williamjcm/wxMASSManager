@@ -32,11 +32,7 @@
 
 #include "Profile.h"
 
-constexpr char company_name_locator[] = "CompanyName\0\x0c\0\0\0StrProperty";
-constexpr char active_slot_locator[] = "ActiveFrameSlot\0\x0c\0\0\0IntProperty";
-constexpr char credits_locator[] = "Credit\0\x0c\0\0\0IntProperty";
-constexpr char story_progress_locator[] = "StoryProgress\0\x0c\0\0\0IntProperty";
-constexpr char last_mission_id_locator[] = "LastMissionID\0\x0c\0\0\0IntProperty";
+#include "Locators.h"
 
 using namespace Corrade;
 
