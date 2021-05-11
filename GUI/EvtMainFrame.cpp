@@ -626,6 +626,8 @@ void EvtMainFrame::updateCommandsState() {
     GameState game_state = _mbManager.gameState();
     MassState mass_state = _massManager->massState(selection);
 
+    _companyRenameButton->Enable(_unsafeMode == true || game_state == GameState::NotRunning);
+
     _importButton->Enable(selection != -1 && staged_selection != -1 && (_unsafeMode == true || game_state == GameState::NotRunning));
     _exportButton->Enable(selection != -1);
     _moveButton->Enable(selection != -1 && (_unsafeMode == true || game_state == GameState::NotRunning) && mass_state == MassState::Valid);
