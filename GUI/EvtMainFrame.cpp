@@ -543,7 +543,6 @@ void EvtMainFrame::updateProfileStats() {
     Profile* current_profile = _profileManager.currentProfile();
     _companyName->SetLabel(current_profile->getCompanyName());
 
-
     _credits->SetLabel(wxString::Format("%i", current_profile->getCredits()));
 
     if(story_progress_map.find(current_profile->getStoryProgress()) != story_progress_map.end()) {
