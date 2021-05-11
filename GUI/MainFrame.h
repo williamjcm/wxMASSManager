@@ -82,7 +82,7 @@ class MainFrame : public wxFrame
 		virtual void backupSelectedProfileEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void openScreenshotDirEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void unsafeCheckboxEvent( wxCommandEvent& event ) { event.Skip(); }
-		virtual void companyRenameEvent( wxMouseEvent& event ) { event.Skip(); }
+		virtual void companyRenameEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void moveMassEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void deleteMassEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void renameMassEvent( wxCommandEvent& event ) { event.Skip(); }
