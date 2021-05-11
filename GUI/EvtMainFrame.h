@@ -45,6 +45,8 @@ class EvtMainFrame: public MainFrame {
         void profileSelectionEvent(wxCommandEvent&);
         void backupSelectedProfileEvent(wxCommandEvent&);
         void companyRenameEvent(wxMouseEvent&);
+        void storyProgressSelectionEvent(wxCommandEvent& event);
+        void openStoryProgressMenuEvent(wxCommandEvent&);
 
         // M.A.S.S.-related events
         void importMassEvent(wxCommandEvent&);
@@ -72,6 +74,7 @@ class EvtMainFrame: public MainFrame {
         void stagingFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
 
         void updateProfileStats();
+        void initStoryProgressMenu();
 
         void initialiseListView();
         void isGameRunning();
@@ -89,6 +92,8 @@ class EvtMainFrame: public MainFrame {
         MassBuilderManager _mbManager;
         ProfileManager _profileManager;
         Containers::Pointer<MassManager> _massManager;
+
+        Containers::Pointer<wxMenu> _storyProgressSelectionMenu;
 
         wxFileSystemWatcher _watcher;
         int _lastWatcherEventType = 0;

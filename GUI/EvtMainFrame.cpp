@@ -22,6 +22,7 @@
 
 #include <wx/busyinfo.h>
 #include <wx/filedlg.h>
+#include <wx/menu.h>
 #include <wx/msgdlg.h>
 #include <wx/numdlg.h>
 #include <wx/regex.h>
@@ -107,6 +108,8 @@ EvtMainFrame::EvtMainFrame(wxWindow* parent):
                      wxFSW_EVENT_CREATE|wxFSW_EVENT_DELETE|wxFSW_EVENT_MODIFY|wxFSW_EVENT_RENAME, "*.sav");
 
     _gameCheckTimer.Start(2000);
+
+    initStoryProgressMenu();
 }
 
 EvtMainFrame::~EvtMainFrame() {
@@ -205,6 +208,37 @@ void EvtMainFrame::companyRenameEvent(wxMouseEvent&) {
             }
         }
     }
+}
+
+void EvtMainFrame::storyProgressSelectionEvent(wxCommandEvent& event) {
+    const static std::string error_prefix = "StoryProgress change failed:\n\n";
+
+    std::int32_t story_progress = event.GetId() ^ (-10000);
+
+    if(_unsafeMode == false) {
+        switch(_mbManager.gameState()) {
+            case GameState::Unknown:
+                errorMessage(error_prefix + "For security reasons, changing the story progression is disabled if the game's status is unknown.");
+                break;
+            case GameState::NotRunning:
+                if(!_profileManager.currentProfile()->setStoryProgress(story_progress)) {
+                    errorMessage(error_prefix + _profileManager.currentProfile()->lastError());
+                }
+                break;
+            case GameState::Running:
+                errorMessage(error_prefix + "Changing the story progression is disabled while the game is running.");
+                break;
+        }
+    }
+    else if(!_profileManager.currentProfile()->setStoryProgress(story_progress)) {
+        errorMessage(error_prefix + _profileManager.currentProfile()->lastError());
+    }
+
+    updateProfileStats();
+}
+
+void EvtMainFrame::openStoryProgressMenuEvent(wxCommandEvent&) {
+    PopupMenu(_storyProgressSelectionMenu.get());
 }
 
 void EvtMainFrame::importMassEvent(wxCommandEvent&) {
@@ -560,6 +594,57 @@ void EvtMainFrame::updateProfileStats() {
     }
 }
 
+void EvtMainFrame::initStoryProgressMenu() {
+    _storyProgressSelectionMenu.emplace();
+
+    if(!_storyProgressSelectionMenu) {
+        errorMessage("Error initialising the story progress selection menu.");
+        this->Destroy();
+        return;
+    }
+
+    wxMenu* submenu = nullptr;
+
+    for(const auto& pair : story_progress_map) {
+        if(std::strncmp(pair.second + 10, "start", 5) == 0) {
+            submenu = new wxMenu();
+
+            if(!submenu) {
+                errorMessage("Error initialising the story progress selection menu.");
+                this->Destroy();
+                return;
+            }
+
+            _storyProgressSelectionMenu->Append(wxID_ANY, wxString{pair.second, 9}, submenu);
+
+            wxMenuItem* item = submenu->Append(pair.first ^ (-10000), "Chapter start");
+
+            if(!item) {
+                errorMessage("Error initialising the story progress selection menu.");
+                this->Destroy();
+                return;
+            }
+        }
+        else {
+            if(!submenu) {
+                errorMessage("Error initialising the story progress selection menu.");
+                this->Destroy();
+                return;
+            }
+
+            wxMenuItem* item = submenu->Append(pair.first ^ (-10000), wxString{pair.second + 12});
+
+            if(!item) {
+                errorMessage("Error initialising the story progress selection menu.");
+                this->Destroy();
+                return;
+            }
+        }
+    }
+
+    _storyProgressSelectionMenu->Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(EvtMainFrame::storyProgressSelectionEvent), nullptr, this);
+}
+
 void EvtMainFrame::initialiseListView() {
     for(long i = 0; i < 32; i++) {
         _installedListView->InsertItem(i, wxString::Format("%.2i", i + 1));
@@ -627,6 +712,7 @@ void EvtMainFrame::updateCommandsState() {
     MassState mass_state = _massManager->massState(selection);
 
     _companyRenameButton->Enable(_unsafeMode == true || game_state == GameState::NotRunning);
+    _storyProgressChangeButton->Enable(_unsafeMode == true || game_state == GameState::NotRunning);
 
     _importButton->Enable(selection != -1 && staged_selection != -1 && (_unsafeMode == true || game_state == GameState::NotRunning));
     _exportButton->Enable(selection != -1);

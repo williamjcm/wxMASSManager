@@ -211,6 +211,21 @@ auto Profile::getStoryProgress() -> std::int32_t {
     return _storyProgress;
 }
 
+auto Profile::setStoryProgress(std::int32_t progress) -> bool {
+    auto mmap = Utility::Directory::map(Utility::Directory::join(_profileDirectory, _filename));
+
+    auto iter = std::search(mmap.begin(), mmap.end(), &story_progress_locator[0], &story_progress_locator[29]);
+
+    if(iter != mmap.end()) {
+        *reinterpret_cast<std::int32_t*>(iter + 0x27) = progress;
+        return true;
+    }
+    else{
+        _lastError = "The profile save seems to be corrupted or the game didn't release the handle on the file.";
+        return false;
+    }
+}
+
 auto Profile::lastMissionId() const -> std::int32_t {
     return _lastMissionId;
 }

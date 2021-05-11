@@ -36,6 +36,7 @@ class Profile {
 
         auto storyProgress() const -> std::int32_t;
         auto getStoryProgress() -> std::int32_t;
+        auto setStoryProgress(std::int32_t progress) -> bool;
 
         auto lastMissionId() const -> std::int32_t;
         auto getLastMissionId() -> std::int32_t;

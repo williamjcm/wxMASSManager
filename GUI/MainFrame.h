@@ -59,6 +59,7 @@ class MainFrame : public wxFrame
 		wxStaticText* _lastMissionIdLabel;
 		wxStaticText* _lastMissionId;
 		wxButton* _companyRenameButton;
+		wxButton* _storyProgressChangeButton;
 		wxPanel* _massPanel;
 		wxListView* _installedListView;
 		wxButton* _moveButton;
@@ -83,6 +84,7 @@ class MainFrame : public wxFrame
 		virtual void openScreenshotDirEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void unsafeCheckboxEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void companyRenameEvent( wxCommandEvent& event ) { event.Skip(); }
+		virtual void openStoryProgressMenuEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void moveMassEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void deleteMassEvent( wxCommandEvent& event ) { event.Skip(); }
 		virtual void renameMassEvent( wxCommandEvent& event ) { event.Skip(); }

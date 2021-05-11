@@ -114,6 +114,10 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_companyRenameButton = new wxButton( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Rename company"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizerProfileCommands->Add( _companyRenameButton, 0, wxALL, 5 );
 
+	_storyProgressChangeButton = new wxButton( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Change story progress"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizerProfileCommands->Add( _storyProgressChangeButton, 0, wxALL, 5 );
+
+
 	sbSizerGeneralInfo->Add( bSizerProfileCommands, 0, wxEXPAND, 5 );
 
 
@@ -254,6 +258,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_openScreenshotDirButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openScreenshotDirEvent ), NULL, this );
 	_unsafeCheckbox->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
 	_companyRenameButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::companyRenameEvent ), NULL, this );
+	_storyProgressChangeButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openStoryProgressMenuEvent ), NULL, this );
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
 	_renameButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );
@@ -274,6 +279,7 @@ MainFrame::~MainFrame()
 	_openScreenshotDirButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openScreenshotDirEvent ), NULL, this );
 	_unsafeCheckbox->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
 	_companyRenameButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::companyRenameEvent ), NULL, this );
+	_storyProgressChangeButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openStoryProgressMenuEvent ), NULL, this );
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
 	_renameButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );
