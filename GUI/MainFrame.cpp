@@ -67,14 +67,10 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	_companyNameLabel = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Company name:"), wxDefaultPosition, wxDefaultSize, 0 );
 	_companyNameLabel->Wrap( -1 );
-	_companyNameLabel->SetToolTip( wxT("EXPERIMENTAL: Double-click the company name to rename it.") );
-
 	fgSizerGeneralStats->Add( _companyNameLabel, 0, wxALL, 5 );
 
 	_companyName = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("<blank>"), wxDefaultPosition, wxDefaultSize, 0 );
 	_companyName->Wrap( -1 );
-	_companyName->SetToolTip( wxT("EXPERIMENTAL: Double-click the company name to rename it.") );
-
 	fgSizerGeneralStats->Add( _companyName, 0, wxALL|wxEXPAND, 5 );
 
 	_creditsLabel = new wxStaticText( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Credits:"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -111,6 +107,14 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 
 	sbSizerGeneralInfo->Add( fgSizerGeneralStats, 1, wxEXPAND, 5 );
+
+	wxBoxSizer* bSizerProfileCommands;
+	bSizerProfileCommands = new wxBoxSizer( wxHORIZONTAL );
+
+	_companyRenameButton = new wxButton( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Rename company"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizerProfileCommands->Add( _companyRenameButton, 0, wxALL, 5 );
+
+	sbSizerGeneralInfo->Add( bSizerProfileCommands, 0, wxEXPAND, 5 );
 
 
 	bSizerProfilePanel->Add( sbSizerGeneralInfo, 1, wxEXPAND|wxALL, 5 );
@@ -249,7 +253,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_backupSelectedButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSelectedProfileEvent ), NULL, this );
 	_openScreenshotDirButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openScreenshotDirEvent ), NULL, this );
 	_unsafeCheckbox->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
-	_companyName->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( MainFrame::companyRenameEvent ), NULL, this );
+	_companyRenameButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::companyRenameEvent ), NULL, this );
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
 	_renameButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );
@@ -269,7 +273,7 @@ MainFrame::~MainFrame()
 	_backupSelectedButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::backupSelectedProfileEvent ), NULL, this );
 	_openScreenshotDirButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openScreenshotDirEvent ), NULL, this );
 	_unsafeCheckbox->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
-	_companyName->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( MainFrame::companyRenameEvent ), NULL, this );
+	_companyRenameButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::companyRenameEvent ), NULL, this );
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
 	_renameButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );
