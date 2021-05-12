@@ -73,6 +73,7 @@ target_link_options(wxMASSManager PRIVATE -static -static-libgcc -static-libstdc
 target_link_libraries(wxMASSManager PRIVATE
     Corrade::Containers
     Corrade::Utility
+    wx_mswu_propgrid-3.0
     wx_mswu_adv-3.0
     wx_mswu_core-3.0
     wx_baseu-3.0

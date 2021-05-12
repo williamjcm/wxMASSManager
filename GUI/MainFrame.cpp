@@ -121,7 +121,47 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	sbSizerGeneralInfo->Add( bSizerProfileCommands, 0, wxEXPAND, 5 );
 
 
-	bSizerProfilePanel->Add( sbSizerGeneralInfo, 1, wxEXPAND|wxALL, 5 );
+	bSizerProfilePanel->Add( sbSizerGeneralInfo, 1, wxEXPAND|wxTOP|wxRIGHT|wxLEFT, 5 );
+
+	wxBoxSizer* bSizerBottomHalf;
+	bSizerBottomHalf = new wxBoxSizer( wxHORIZONTAL );
+
+	wxStaticBoxSizer* sbSizerResearchInv;
+	sbSizerResearchInv = new wxStaticBoxSizer( new wxStaticBox( _profilePanel, wxID_ANY, wxT("Research inventory") ), wxVERTICAL );
+
+	_researchInventoryPropGrid = new wxPropertyGrid(sbSizerResearchInv->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxPG_HIDE_MARGIN|wxPG_SPLITTER_AUTO_CENTER|wxPG_STATIC_LAYOUT|wxPG_STATIC_SPLITTER);
+	_materialsCategory = _researchInventoryPropGrid->Append( new wxPropertyCategory( wxT("Materials"), wxT("Materials") ) );
+	_verseSteel = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Verse Steel"), wxT("Verse Steel") ) );
+	_undinium = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Undinium"), wxT("Undinium") ) );
+	_necriumAlloy = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Necrium Alloy"), wxT("Necrium Alloy") ) );
+	_lunarite = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Lunarite"), wxT("Lunarite") ) );
+	_asterite = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Asterite"), wxT("Asterite") ) );
+	_ednil = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Ednil"), wxT("Ednil") ) );
+	_nuflalt = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Nuflalt"), wxT("Nuflalt") ) );
+	_aurelene = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Aurelene"), wxT("Aurelene") ) );
+	_soldus = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Soldus"), wxT("Soldus") ) );
+	_synthesizedN = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Synthesized N."), wxT("Synthesized N.") ) );
+	_alcarbonite = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Alcarbonite"), wxT("Alcarbonite") ) );
+	_keriphene = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Keriphene"), wxT("Keriphene") ) );
+	_nitinolCM = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Nitinol-CM"), wxT("Nitinol-CM") ) );
+	_quarkium = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Quarkium"), wxT("Quarkium") ) );
+	_alterene = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Alterene"), wxT("Alterene") ) );
+	_quarkDataCategory = _researchInventoryPropGrid->Append( new wxPropertyCategory( wxT("Quark Data"), wxT("Quark Data") ) );
+	_mixedComposition = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Mixed Composition"), wxT("Mixed Composition") ) );
+	_voidResidue = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Void Residue"), wxT("Void Residue") ) );
+	_muscularConstruction = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Muscular Construction"), wxT("Muscular Construction") ) );
+	_mineralExoskeletology = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Mineral Exoskeletology"), wxT("Mineral Exoskeletology") ) );
+	_carbonizedSkin = _researchInventoryPropGrid->Append( new wxIntProperty( wxT("Carbonized Skin"), wxT("Carbonized Skin") ) );
+	sbSizerResearchInv->Add( _researchInventoryPropGrid, 1, wxALL|wxEXPAND, 5 );
+
+
+	bSizerBottomHalf->Add( sbSizerResearchInv, 1, wxEXPAND|wxALL, 5 );
+
+
+	bSizerBottomHalf->Add( 0, 0, 1, wxEXPAND, 5 );
+
+
+	bSizerProfilePanel->Add( bSizerBottomHalf, 1, wxEXPAND, 5 );
 
 
 	_profilePanel->SetSizer( bSizerProfilePanel );
@@ -259,6 +299,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_unsafeCheckbox->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
 	_companyRenameButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::companyRenameEvent ), NULL, this );
 	_storyProgressChangeButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openStoryProgressMenuEvent ), NULL, this );
+	_researchInventoryPropGrid->Connect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( MainFrame::inventoryChangeEvent ), NULL, this );
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
 	_renameButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );
@@ -280,6 +321,7 @@ MainFrame::~MainFrame()
 	_unsafeCheckbox->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
 	_companyRenameButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::companyRenameEvent ), NULL, this );
 	_storyProgressChangeButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openStoryProgressMenuEvent ), NULL, this );
+	_researchInventoryPropGrid->Disconnect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( MainFrame::inventoryChangeEvent ), NULL, this );
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
 	_deleteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::deleteMassEvent ), NULL, this );
 	_renameButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::renameMassEvent ), NULL, this );

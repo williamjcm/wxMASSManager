@@ -241,6 +241,59 @@ void EvtMainFrame::openStoryProgressMenuEvent(wxCommandEvent&) {
     PopupMenu(_storyProgressSelectionMenu.get());
 }
 
+void EvtMainFrame::inventoryChangeEvent(wxPropertyGridEvent& event) {
+    const static std::string error_prefix = "Inventory change failed:\n\n";
+
+    std::int32_t value = event.GetPropertyValue().GetInteger();
+    Profile* profile = _profileManager.currentProfile();
+
+    if(value > 1000000 || value < 0) {
+        event.SetValidationFailureMessage(error_prefix + "The value must not be higher than 1 million or lower than 0");
+        event.Veto();
+        return;
+    }
+
+    if(_unsafeMode == true || _mbManager.gameState() == GameState::NotRunning) {
+        wxPGProperty* prop = event.GetProperty();
+        bool success = false;
+
+        if(prop == _verseSteel) { success = profile->setVerseSteel(value); }
+        else if(prop == _undinium) { success = profile->setUndinium(value); }
+        else if(prop == _necriumAlloy) { success = profile->setNecriumAlloy(value); }
+        else if(prop == _lunarite) { success = profile->setLunarite(value); }
+        else if(prop == _asterite) { success = profile->setAsterite(value); }
+        else if(prop == _ednil) { success = profile->setEdnil(value); }
+        else if(prop == _nuflalt) { success = profile->setNuflalt(value); }
+        else if(prop == _aurelene) { success = profile->setAurelene(value); }
+        else if(prop == _soldus) { success = profile->setSoldus(value); }
+        else if(prop == _synthesizedN) { success = profile->setSynthesizedN(value); }
+        else if(prop == _alcarbonite) { success = profile->setAlcarbonite(value); }
+        else if(prop == _keriphene) { success = profile->setKeriphene(value); }
+        else if(prop == _nitinolCM) { success = profile->setNitinolCM(value); }
+        else if(prop == _quarkium) { success = profile->setQuarkium(value); }
+        else if(prop == _alterene) { success = profile->setAlterene(value); }
+
+        else if(prop == _mixedComposition) { success = profile->setMixedComposition(value); }
+        else if(prop == _voidResidue) { success = profile->setVoidResidue(value); }
+        else if(prop == _muscularConstruction) { success = profile->setMuscularConstruction(value); }
+        else if(prop == _mineralExoskeletology) { success = profile->setMineralExoskeletology(value); }
+        else if(prop == _carbonizedSkin) { success = profile->setCarbonizedSkin(value); }
+
+        if(!success) {
+            event.SetValidationFailureMessage(error_prefix + profile->lastError());
+            event.Veto();
+        }
+    }
+    else if(_mbManager.gameState() == GameState::Unknown) {
+        event.SetValidationFailureMessage(error_prefix + "For security reasons, changing the inventory is disabled if the game's status is unknown.");
+        event.Veto();
+    }
+    else if(_mbManager.gameState() == GameState::Running) {
+        event.SetValidationFailureMessage(error_prefix + "For security reasons, changing the inventory is disabled if the game is running.");
+        event.Veto();
+    }
+}
+
 void EvtMainFrame::importMassEvent(wxCommandEvent&) {
     const static std::string error_prefix = "Importing failed:\n\n";
 
@@ -592,6 +645,28 @@ void EvtMainFrame::updateProfileStats() {
     else {
         _lastMissionId->SetLabel(wxString::Format("0x%X", current_profile->lastMissionId()));
     }
+
+    _verseSteel->SetValueFromInt(current_profile->getVerseSteel());
+    _undinium->SetValueFromInt(current_profile->getUndinium());
+    _necriumAlloy->SetValueFromInt(current_profile->getNecriumAlloy());
+    _lunarite->SetValueFromInt(current_profile->getLunarite());
+    _asterite->SetValueFromInt(current_profile->getAsterite());
+    _ednil->SetValueFromInt(current_profile->getEdnil());
+    _nuflalt->SetValueFromInt(current_profile->getNuflalt());
+    _aurelene->SetValueFromInt(current_profile->getAurelene());
+    _soldus->SetValueFromInt(current_profile->getSoldus());
+    _synthesizedN->SetValueFromInt(current_profile->getSynthesizedN());
+    _alcarbonite->SetValueFromInt(current_profile->getAlcarbonite());
+    _keriphene->SetValueFromInt(current_profile->getKeriphene());
+    _nitinolCM->SetValueFromInt(current_profile->getNitinolCM());
+    _quarkium->SetValueFromInt(current_profile->getQuarkium());
+    _alterene->SetValueFromInt(current_profile->getAlterene());
+
+    _mixedComposition->SetValueFromInt(current_profile->getMixedComposition());
+    _voidResidue->SetValueFromInt(current_profile->getVoidResidue());
+    _muscularConstruction->SetValueFromInt(current_profile->getMuscularConstruction());
+    _mineralExoskeletology->SetValueFromInt(current_profile->getMineralExoskeletology());
+    _carbonizedSkin->SetValueFromInt(current_profile->getCarbonizedSkin());
 }
 
 void EvtMainFrame::initStoryProgressMenu() {
@@ -713,6 +788,14 @@ void EvtMainFrame::updateCommandsState() {
 
     _companyRenameButton->Enable(_unsafeMode == true || game_state == GameState::NotRunning);
     _storyProgressChangeButton->Enable(_unsafeMode == true || game_state == GameState::NotRunning);
+
+    wxPropertyGridConstIterator it = _researchInventoryPropGrid->GetIterator(wxPG_ITERATE_NORMAL);
+    while(!it.AtEnd()) {
+        if(it.GetProperty()->IsCategory() == false) {
+            it.GetProperty()->Enable(_unsafeMode == true || game_state == GameState::NotRunning);
+        }
+        it.Next();
+    }
 
     _importButton->Enable(selection != -1 && staged_selection != -1 && (_unsafeMode == true || game_state == GameState::NotRunning));
     _exportButton->Enable(selection != -1);

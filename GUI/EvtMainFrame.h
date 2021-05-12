@@ -47,6 +47,7 @@ class EvtMainFrame: public MainFrame {
         void companyRenameEvent(wxMouseEvent&);
         void storyProgressSelectionEvent(wxCommandEvent& event);
         void openStoryProgressMenuEvent(wxCommandEvent&);
+        void inventoryChangeEvent(wxPropertyGridEvent& event);
 
         // M.A.S.S.-related events
         void importMassEvent(wxCommandEvent&);
