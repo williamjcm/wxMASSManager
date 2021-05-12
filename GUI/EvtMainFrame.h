@@ -44,7 +44,7 @@ class EvtMainFrame: public MainFrame {
         // Profile-related events
         void profileSelectionEvent(wxCommandEvent&);
         void backupSelectedProfileEvent(wxCommandEvent&);
-        void companyRenameEvent(wxMouseEvent&);
+        void companyRenameEvent(wxCommandEvent&);
         void storyProgressSelectionEvent(wxCommandEvent& event);
         void openStoryProgressMenuEvent(wxCommandEvent&);
         void inventoryChangeEvent(wxPropertyGridEvent& event);

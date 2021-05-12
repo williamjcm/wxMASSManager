@@ -167,7 +167,7 @@ void EvtMainFrame::backupSelectedProfileEvent(wxCommandEvent&) {
     }
 }
 
-void EvtMainFrame::companyRenameEvent(wxMouseEvent&) {
+void EvtMainFrame::companyRenameEvent(wxCommandEvent&) {
     const static std::string error_prefix = "Rename failed:\n\n";
 
     EvtNameChangeDialog dialog{this};
