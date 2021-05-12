@@ -691,6 +691,8 @@ void EvtMainFrame::updateProfileStats() {
     _muscularConstruction->SetValueFromInt(current_profile->getMuscularConstruction());
     _mineralExoskeletology->SetValueFromInt(current_profile->getMineralExoskeletology());
     _carbonizedSkin->SetValueFromInt(current_profile->getCarbonizedSkin());
+
+    updateCommandsState();
 }
 
 void EvtMainFrame::initStoryProgressMenu() {
@@ -817,7 +819,7 @@ void EvtMainFrame::updateCommandsState() {
     wxPropertyGridConstIterator it = _researchInventoryPropGrid->GetIterator(wxPG_ITERATE_NORMAL);
     while(!it.AtEnd()) {
         if(it.GetProperty()->IsCategory() == false) {
-            it.GetProperty()->Enable(_unsafeMode == true || game_state == GameState::NotRunning);
+            it.GetProperty()->Enable(it.GetProperty()->GetValue().GetInteger() != -1 && (_unsafeMode == true || game_state == GameState::NotRunning));
         }
         it.Next();
     }
