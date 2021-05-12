@@ -187,6 +187,22 @@ auto Profile::getCredits() -> std::int32_t {
     return _credits;
 }
 
+auto Profile::setCredits(std::int32_t amount) -> bool {
+    auto mmap = Utility::Directory::map(Utility::Directory::join(_profileDirectory, _filename));
+
+    auto iter = std::search(mmap.begin(), mmap.end(), &credits_locator[0], &credits_locator[22]);
+
+    if(iter != mmap.end()) {
+        *reinterpret_cast<std::int32_t*>(iter + 0x20) = amount;
+        _credits = amount;
+        return true;
+    }
+    else {
+        _lastError = "The profile save seems to be corrupted or the game didn't release the handle on the file.";
+        return false;
+    }
+}
+
 auto Profile::storyProgress() const -> std::int32_t {
     return _storyProgress;
 }

@@ -33,6 +33,7 @@ class Profile {
 
         auto credits() const -> std::int32_t;
         auto getCredits() -> std::int32_t;
+        auto setCredits(std::int32_t) -> bool;
 
         auto storyProgress() const -> std::int32_t;
         auto getStoryProgress() -> std::int32_t;

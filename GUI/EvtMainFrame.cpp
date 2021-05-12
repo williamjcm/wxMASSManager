@@ -210,6 +210,30 @@ void EvtMainFrame::companyRenameEvent(wxCommandEvent&) {
     }
 }
 
+void EvtMainFrame::creditsEditEvent(wxCommandEvent&) {
+    const static std::string error_prefix = "Credits change failed:\n\n";
+
+    if(_unsafeMode == true || _mbManager.gameState() == GameState::NotRunning) {
+        long number = wxGetNumberFromUser("Please enter a number of credits between 0 and 2 000 000 000 included:", "Credits:", "Input credits",
+                                          _profileManager.currentProfile()->credits(), 0, 2000000000, this);
+        if(number == -1 || number == _profileManager.currentProfile()->credits()) {
+            return;
+        }
+
+        if(!_profileManager.currentProfile()->setCredits(number)) {
+            errorMessage(error_prefix + _profileManager.currentProfile()->lastError());
+        }
+
+        updateProfileStats();
+    }
+    else if(_mbManager.gameState() == GameState::Unknown) {
+        errorMessage(error_prefix + "For security reasons, changing credits is disabled if the game's status is unknown.");
+    }
+    else if(_mbManager.gameState() == GameState::Running) {
+        errorMessage(error_prefix + "For security reasons, changing credits is disabled if the game is running.");
+    }
+}
+
 void EvtMainFrame::storyProgressSelectionEvent(wxCommandEvent& event) {
     const static std::string error_prefix = "StoryProgress change failed:\n\n";
 
@@ -787,6 +811,7 @@ void EvtMainFrame::updateCommandsState() {
     MassState mass_state = _massManager->massState(selection);
 
     _companyRenameButton->Enable(_unsafeMode == true || game_state == GameState::NotRunning);
+    _creditsEditButton->Enable(_unsafeMode == true || game_state == GameState::NotRunning);
     _storyProgressChangeButton->Enable(_unsafeMode == true || game_state == GameState::NotRunning);
 
     wxPropertyGridConstIterator it = _researchInventoryPropGrid->GetIterator(wxPG_ITERATE_NORMAL);

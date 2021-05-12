@@ -114,6 +114,9 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_companyRenameButton = new wxButton( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Rename company"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizerProfileCommands->Add( _companyRenameButton, 0, wxALL, 5 );
 
+	_creditsEditButton = new wxButton( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Edit credits"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizerProfileCommands->Add( _creditsEditButton, 0, wxALL, 5 );
+
 	_storyProgressChangeButton = new wxButton( sbSizerGeneralInfo->GetStaticBox(), wxID_ANY, wxT("Change story progress"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizerProfileCommands->Add( _storyProgressChangeButton, 0, wxALL, 5 );
 
@@ -298,6 +301,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_openScreenshotDirButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openScreenshotDirEvent ), NULL, this );
 	_unsafeCheckbox->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
 	_companyRenameButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::companyRenameEvent ), NULL, this );
+	_creditsEditButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::creditsEditEvent ), NULL, this );
 	_storyProgressChangeButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openStoryProgressMenuEvent ), NULL, this );
 	_researchInventoryPropGrid->Connect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( MainFrame::inventoryChangeEvent ), NULL, this );
 	_moveButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );
@@ -320,6 +324,7 @@ MainFrame::~MainFrame()
 	_openScreenshotDirButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openScreenshotDirEvent ), NULL, this );
 	_unsafeCheckbox->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( MainFrame::unsafeCheckboxEvent ), NULL, this );
 	_companyRenameButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::companyRenameEvent ), NULL, this );
+	_creditsEditButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::creditsEditEvent ), NULL, this );
 	_storyProgressChangeButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::openStoryProgressMenuEvent ), NULL, this );
 	_researchInventoryPropGrid->Disconnect( wxEVT_PG_CHANGING, wxPropertyGridEventHandler( MainFrame::inventoryChangeEvent ), NULL, this );
 	_moveButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::moveMassEvent ), NULL, this );

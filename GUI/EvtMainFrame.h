@@ -42,33 +42,34 @@ class EvtMainFrame: public MainFrame {
 
     protected:
         // Profile-related events
-        void profileSelectionEvent(wxCommandEvent&);
-        void backupSelectedProfileEvent(wxCommandEvent&);
-        void companyRenameEvent(wxCommandEvent&);
+        void profileSelectionEvent(wxCommandEvent&) override;
+        void backupSelectedProfileEvent(wxCommandEvent&) override;
+        void companyRenameEvent(wxCommandEvent&) override;
+        void creditsEditEvent(wxCommandEvent&) override;
         void storyProgressSelectionEvent(wxCommandEvent& event);
-        void openStoryProgressMenuEvent(wxCommandEvent&);
-        void inventoryChangeEvent(wxPropertyGridEvent& event);
+        void openStoryProgressMenuEvent(wxCommandEvent&) override;
+        void inventoryChangeEvent(wxPropertyGridEvent& event) override;
 
         // M.A.S.S.-related events
-        void importMassEvent(wxCommandEvent&);
-        void exportMassEvent(wxCommandEvent&);
-        void moveMassEvent(wxCommandEvent&);
-        void deleteMassEvent(wxCommandEvent&);
-        void renameMassEvent(wxCommandEvent&);
-        void openSaveDirEvent(wxCommandEvent&);
-        void stagingSelectionEvent(wxCommandEvent&);
-        void deleteStagedEvent(wxCommandEvent&);
-        void openStagingDirEvent(wxCommandEvent&);
+        void importMassEvent(wxCommandEvent&) override;
+        void exportMassEvent(wxCommandEvent&) override;
+        void moveMassEvent(wxCommandEvent&) override;
+        void deleteMassEvent(wxCommandEvent&) override;
+        void renameMassEvent(wxCommandEvent&) override;
+        void openSaveDirEvent(wxCommandEvent&) override;
+        void stagingSelectionEvent(wxCommandEvent&) override;
+        void deleteStagedEvent(wxCommandEvent&) override;
+        void openStagingDirEvent(wxCommandEvent&) override;
         void installedSelectionEvent(wxListEvent&);
         void listColumnDragEvent(wxListEvent&);
 
         // Screenshot-related events
-        void openScreenshotDirEvent(wxCommandEvent&);
+        void openScreenshotDirEvent(wxCommandEvent&) override;
 
         // General events
         void fileUpdateEvent(wxFileSystemWatcherEvent& event);
-        void gameCheckTimerEvent(wxTimerEvent&);
-        void unsafeCheckboxEvent(wxCommandEvent& event);
+        void gameCheckTimerEvent(wxTimerEvent&) override;
+        void unsafeCheckboxEvent(wxCommandEvent& event) override;
 
     private:
         void saveFileEventHandler(int event_type, const wxString& event_file, const wxFileSystemWatcherEvent& event);
