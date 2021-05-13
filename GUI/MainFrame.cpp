@@ -124,7 +124,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	sbSizerGeneralInfo->Add( bSizerProfileCommands, 0, wxEXPAND, 5 );
 
 
-	bSizerProfilePanel->Add( sbSizerGeneralInfo, 1, wxEXPAND|wxTOP|wxRIGHT|wxLEFT, 5 );
+	bSizerProfilePanel->Add( sbSizerGeneralInfo, 0, wxEXPAND|wxTOP|wxRIGHT|wxLEFT, 5 );
 
 	wxBoxSizer* bSizerBottomHalf;
 	bSizerBottomHalf = new wxBoxSizer( wxHORIZONTAL );
@@ -170,7 +170,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	_profilePanel->SetSizer( bSizerProfilePanel );
 	_profilePanel->Layout();
 	bSizerProfilePanel->Fit( _profilePanel );
-	_managerNotebook->AddPage( _profilePanel, wxT("Profile details and stats"), false );
+	_managerNotebook->AddPage( _profilePanel, wxT("Profile details and stats"), true );
 	_massPanel = new wxPanel( _managerNotebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizerMassPanel;
 	bSizerMassPanel = new wxBoxSizer( wxHORIZONTAL );
