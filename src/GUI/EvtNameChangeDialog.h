@@ -1,5 +1,8 @@
+#ifndef __EvtNameChangeDialog__
+#define __EvtNameChangeDialog__
+
 // wxMASSManager
-// Copyright (C) 2020 Guillaume Jacquemin
+// Copyright (C) 2020-2021 Guillaume Jacquemin
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,6 +17,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-MAINICON ICON "mb.ico"
+#include "NameChangeDialog.h"
 
-1 24 "Application.manifest"
+class EvtNameChangeDialog: public NameChangeDialog {
+    public:
+        EvtNameChangeDialog(wxWindow* parent);
+
+        auto getName() -> std::string;
+        void setName(const std::string& name);
+
+    protected:
+        void textEditEvent(wxCommandEvent&);
+        void okButtonEvent(wxCommandEvent&);
+        void cancelButtonEvent(wxCommandEvent&);
+
+    private:
+        auto validateName() -> bool;
+};
+
+#endif // __EvtNameChangeDialog__
